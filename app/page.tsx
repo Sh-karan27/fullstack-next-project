@@ -1,7 +1,9 @@
+'use client';
 import { apiClient } from '@/lib/api-client';
 import { IVideo } from '@/models/Video';
-import Image from 'next/image';
+
 import { useEffect, useState } from 'react';
+import VideoFeed from './components/VideoFeed';
 
 export default function Home() {
   const [videos, setvideos] = useState<IVideo[]>([]);
@@ -20,8 +22,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
-      <h1>Chai code</h1>
-    </div>
+    <main className='container mx-auto px-4 py-8'>
+      <h1 className='text-3xl font-bold mb-8'>ImageKit ReelsPro</h1>
+      <VideoFeed videos={videos} />
+    </main>
   );
 }

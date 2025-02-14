@@ -32,9 +32,9 @@ export default function FileUpload({
   };
 
   const handleProgress = (evt: ProgressEvent) => {
-    if (evt.lengthComputable) {
+    if (evt.lengthComputable && onProgress) {
       const progress = (evt.loaded / evt.total) * 100;
-      onProgress(progress);
+      onProgress(Math.round(progress));
     }
   };
 
@@ -45,7 +45,7 @@ export default function FileUpload({
 
   const validateFile = (file: File) => {
     if (fileType === 'video') {
-      if (file.type.startsWith('video')) {
+      if (!file.type.startsWith('video/')) {
         setError('Please upload a video file');
         return false;
       }
@@ -62,11 +62,11 @@ export default function FileUpload({
         return false;
       }
       if (file.size > 5 * 1024 * 1024) {
-        setError('Image size should be less than 100MB');
+        setError('Image size should be less than 5MB');
         return false;
       }
     }
-    return false;
+    return true;
   };
 
   return (

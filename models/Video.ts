@@ -1,4 +1,4 @@
-import { timeStamp } from 'console';
+
 import mongoose, { model, models, Schema } from 'mongoose';
 
 export const VIDEO_DIMENSIONS = {
@@ -12,7 +12,7 @@ export interface IVideo {
   description: string;
   videoUrl: string;
   thumbnailUrl: string;
-  controls?: Boolean;
+  controls?: boolean;
   transformation?: {
     height: number;
     weight: number;
