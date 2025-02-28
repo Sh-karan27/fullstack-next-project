@@ -4,11 +4,18 @@ import User from '@/models/User';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-    console.log(email, password);
+    const { email, password, username, avatar } = await request.json();
+
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!avatar) {
+      return NextResponse.json(
+        { error: 'Avatar is required' },
         { status: 400 }
       );
     }
@@ -26,9 +33,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User already' }, { status: 400 });
     }
 
-    await User.create({ email, password });
+    console.log('avatar:', avatar);
 
-    return NextResponse.json({ message: 'User created' }, { status: 201 });
+    const user = await User.create({ email, password, username, avatar });
+    await user.save();
+    console.log('avatar after user:', avatar);
+    console.log(user);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Failed to  created user' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: 'User created', user },
+      { status: 201 }
+    );
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to  created user' },

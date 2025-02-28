@@ -40,7 +40,10 @@ export default function Header() {
             <div className='w-10 rounded-full'>
               <img
                 alt='User Profile'
-                src='https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                src={
+                  session?.user?.avatar ||
+                  'https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp'
+                }
               />
             </div>
           </div>
@@ -51,9 +54,15 @@ export default function Header() {
               <>
                 <li>
                   <span className='justify-between'>
-                    {session.user?.email?.split('@')[0]}
+                    {session.user?.email}
                   </span>
                 </li>
+                <li>
+                  <span className='justify-between font-bold text-[#3a0ca3]'>
+                    {session.user?.username}
+                  </span>
+                </li>
+
                 <li>
                   <Link href='/upload'>Video Upload</Link>
                 </li>

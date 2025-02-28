@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { useNotification } from './Notification';
 import { apiClient } from '@/lib/api-client';
 import FileUpload from './FileUpload';
+import Image from 'next/image';
 
 interface VideoFormData {
   title: string;
@@ -24,6 +25,7 @@ export default function VideoUploadForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<VideoFormData>({
     defaultValues: {
@@ -34,10 +36,17 @@ export default function VideoUploadForm() {
     },
   });
 
-  const handleUploadSuccess = (response: IKUploadResponse) => {
+  const videoUrl = watch('videoUrl');
+  const thumbnailUrl = watch('thumbnailUrl');
+
+  const handleVideoUploadSuccess = (response: IKUploadResponse) => {
     setValue('videoUrl', response.filePath);
-    setValue('thumbnailUrl', response.thumbnailUrl || response.filePath);
     showNotification('Video uploaded successfully!', 'success');
+  };
+
+  const handleThumbnailUploadSuccess = (response: IKUploadResponse) => {
+    setValue('thumbnailUrl', response.filePath);
+    showNotification('Thumbnail uploaded successfully!', 'success');
   };
 
   const handleUploadProgress = (progress: number) => {
@@ -45,8 +54,8 @@ export default function VideoUploadForm() {
   };
 
   const onSubmit = async (data: VideoFormData) => {
-    if (!data.videoUrl) {
-      showNotification('Please upload a video first', 'error');
+    if (!data.videoUrl || !data.thumbnailUrl) {
+      showNotification('Please upload both a video and a thumbnail', 'error');
       return;
     }
 
@@ -73,6 +82,7 @@ export default function VideoUploadForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+      {/* Title */}
       <div className='form-control'>
         <label className='label'>Title</label>
         <input
@@ -89,6 +99,7 @@ export default function VideoUploadForm() {
         )}
       </div>
 
+      {/* Description */}
       <div className='form-control'>
         <label className='label'>Description</label>
         <textarea
@@ -104,11 +115,12 @@ export default function VideoUploadForm() {
         )}
       </div>
 
+      {/* Video Upload */}
       <div className='form-control'>
         <label className='label'>Upload Video</label>
         <FileUpload
           fileType='video'
-          onSuccess={handleUploadSuccess}
+          onSuccess={handleVideoUploadSuccess}
           onProgress={handleUploadProgress}
         />
         {uploadProgress > 0 && (
@@ -119,8 +131,24 @@ export default function VideoUploadForm() {
             />
           </div>
         )}
+        {videoUrl && (
+          <p className='text-sm text-green-500 mt-2'>
+            Video uploaded successfully!
+          </p>
+        )}
       </div>
 
+      {/* Thumbnail Upload */}
+      <div className='form-control'>
+        <label className='label'>Upload Thumbnail</label>
+        <FileUpload
+          fileType='image'
+          onSuccess={handleThumbnailUploadSuccess}
+          onProgress={() => {}}
+        />
+      </div>
+
+      {/* Submit Button */}
       <button
         type='submit'
         className='btn btn-primary btn-block'

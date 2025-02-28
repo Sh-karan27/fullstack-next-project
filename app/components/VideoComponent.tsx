@@ -1,8 +1,10 @@
 import { IKVideo } from 'imagekitio-next';
 import Link from 'next/link';
 import { IVideo } from '@/models/Video';
+import Image from 'next/image';
 
 export default function VideoComponent({ video }: { video: IVideo }) {
+  console.log(video)
   return (
     <div className='card bg-base-100 shadow hover:shadow-lg transition-all duration-300'>
       <figure className='relative px-4 pt-4'>
@@ -35,6 +37,12 @@ export default function VideoComponent({ video }: { video: IVideo }) {
         <p className='text-sm text-base-content/70 line-clamp-2'>
           {video.description}
         </p>
+        <Image
+          src={video?.thumbnailUrl}
+          alt='thubnail'
+          width={10}
+          height={10}
+        />
       </div>
     </div>
   );

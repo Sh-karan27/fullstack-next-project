@@ -20,6 +20,7 @@ export default function FileUpload({
 
   const onError = (err: { message: string }) => {
     console.log('Error', err);
+
     setError(err.message);
     setUploading(false);
   };
