@@ -39,7 +39,7 @@ export async function DELETE(
 ) {
   try {
     await connectToDatabase();
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(

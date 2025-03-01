@@ -11,6 +11,7 @@ const VideoDetailPage = () => {
   const [video, setVideo] = useState<IVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
   const router = useRouter();
   const { showNotification } = useNotification();
 
@@ -57,13 +58,46 @@ const VideoDetailPage = () => {
         <p className='mt-4 text-gray-500'>{video?.description}</p>
       </div>
       <div className='flex gap-2'>
-        <button className='btn btn-primary' onClick={handleDelete}>
+        <button
+          className='btn btn-primary'
+          onClick={() => setShowConfirm(!showConfirm)}>
           Delete
         </button>
 
         <button className='btn btn-primary'>Edit</button>
         <button className='btn btn-primary'>Share</button>
       </div>
+      {/* Confirmation Alert Box */}
+      {showConfirm && (
+        <div
+          role='alert'
+          className='alert alert-vertical sm:alert-horizontal absolute top-0 left-0 right-0 mx-auto w-96 bg-base-200 shadow-md z-50'>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            fill='none'
+            viewBox='0 0 24 24'
+            className='stroke-info h-6 w-6 shrink-0'>
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth='2'
+              d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path>
+          </svg>
+          <span>Are you sure you want to delete this video?</span>
+          <div>
+            <button
+              className='btn btn-sm'
+              onClick={() => setShowConfirm(false)}>
+              Cancel
+            </button>
+            <button
+              className='btn btn-sm btn-primary btn-error'
+              onClick={handleDelete}>
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
