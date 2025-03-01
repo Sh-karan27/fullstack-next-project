@@ -1,48 +1,46 @@
-import { IKVideo } from 'imagekitio-next';
 import Link from 'next/link';
-import { IVideo } from '@/models/Video';
 import Image from 'next/image';
+import { IVideo } from '@/models/Video';
 
-export default function VideoComponent({ video }: { video: IVideo }) {
-  console.log(video)
+interface VideoComponentProps {
+  video: IVideo;
+  onDelete: (id: string) => void;
+}
+
+export default function VideoComponent({
+  video,
+  onDelete,
+}: VideoComponentProps) {
+  const id = video?._id?.toString();
+
+  const deleteVideo = async () => {
+    await onDelete(id as string);
+  };
+
   return (
-    <div className='card bg-base-100 shadow hover:shadow-lg transition-all duration-300'>
-      <figure className='relative px-4 pt-4'>
-        <Link href={`/videos/${video._id}`} className='relative group w-full'>
-          <div
-            className='rounded-xl overflow-hidden relative w-full'
-            style={{ aspectRatio: '9/16' }}>
-            <IKVideo
-              path={video.videoUrl}
-              transformation={[
-                {
-                  height: '1920',
-                  width: '1080',
-                },
-              ]}
-              controls={video.controls}
-              className='w-full h-full object-cover'
-            />
-          </div>
-        </Link>
-      </figure>
-
-      <div className='card-body p-4'>
-        <Link
-          href={`/videos/${video._id}`}
-          className='hover:opacity-80 transition-opacity'>
-          <h2 className='card-title text-lg'>{video.title}</h2>
-        </Link>
-
-        <p className='text-sm text-base-content/70 line-clamp-2'>
-          {video.description}
-        </p>
+    <div className='card bg-base-100 image-full w-full shadow-sm'>
+      {' '}
+      {/* ✅ Set width to full */}
+      <figure>
         <Image
-          src={video?.thumbnailUrl}
-          alt='thubnail'
-          width={10}
-          height={10}
+          src={video.thumbnailUrl}
+          alt={video.title}
+          width={500}
+          height={300}
+          className='rounded-md'
         />
+      </figure>
+      <div className='card-body'>
+        <h2 className='card-title'>{video.title}</h2>
+        <p>{video.description}</p>
+        <div className='card-actions justify-end'>
+          <Link href={`/video/${video._id}`}>
+            <button className='btn btn-primary'>Watch Now</button>
+          </Link>
+          <button className='btn btn-primary' onClick={deleteVideo}>
+            Delete
+          </button>
+        </div>
       </div>
     </div>
   );

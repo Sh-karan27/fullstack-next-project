@@ -67,7 +67,7 @@ export default function FileUpload({
         return false;
       }
     }
-    return true;
+    return true; 
   };
 
   return (

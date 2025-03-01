@@ -40,12 +40,16 @@ export default function VideoUploadForm() {
   const thumbnailUrl = watch('thumbnailUrl');
 
   const handleVideoUploadSuccess = (response: IKUploadResponse) => {
-    setValue('videoUrl', response.filePath);
+    const fullUrl = `${process.env.NEXT_PUBLIC_URL_ENDPOINT}${response.filePath}`;
+    console.log('Full video URL:', fullUrl);
+    setValue('videoUrl', fullUrl);
     showNotification('Video uploaded successfully!', 'success');
   };
 
   const handleThumbnailUploadSuccess = (response: IKUploadResponse) => {
-    setValue('thumbnailUrl', response.filePath);
+    const fullUrl = `${process.env.NEXT_PUBLIC_URL_ENDPOINT}${response.filePath}`;
+    console.log('Full Thumbnail URL:', fullUrl);
+    setValue('thumbnailUrl', fullUrl);
     showNotification('Thumbnail uploaded successfully!', 'success');
   };
 
