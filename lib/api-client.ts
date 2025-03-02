@@ -3,7 +3,7 @@ import { IVideo } from '@/models/Video';
 export type VideoFormData = Omit<IVideo, '_id'>;
 
 type FetchOptions = {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
   headers?: Record<string, string>;
 };
@@ -37,11 +37,20 @@ class ApiClient {
     return this.fetch<IVideo[]>('/videos');
   }
 
+  async editVideo(
+    id: string,
+    videoData: { title: string; description: string }
+  ) {
+    return this.fetch<IVideo>(`/videos/${id}`, {
+      method: 'PATCH',
+      body: videoData,
+    });
+  }
+
   async getAVideo(id: string) {
     return this.fetch<IVideo>(`/videos/${id}`);
   }
   async deleteVideo(id: string) {
-    
     return this.fetch<IVideo>(`/videos/${id}`, {
       method: 'DELETE',
     });

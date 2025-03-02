@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { useNotification } from './Notification';
 import { apiClient } from '@/lib/api-client';
 import FileUpload from './FileUpload';
-import Image from 'next/image';
+
 
 interface VideoFormData {
   title: string;

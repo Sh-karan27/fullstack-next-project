@@ -7,15 +7,16 @@ import { useNotification } from '@/app/components/Notification';
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
-
   const [video, setVideo] = useState<IVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const router = useRouter();
   const { showNotification } = useNotification();
 
-  console.log(video);
   useEffect(() => {
     if (!videoId) return;
 
@@ -23,6 +24,8 @@ const VideoDetailPage = () => {
       try {
         const data = await apiClient.getAVideo(videoId as string);
         setVideo(data);
+        setTitle(data.title);
+        setDescription(data.description);
       } catch (error) {
         setError('Failed to Load video');
       } finally {
@@ -38,15 +41,31 @@ const VideoDetailPage = () => {
     try {
       const data = await apiClient.deleteVideo(videoId as string);
       router.push('/');
-      showNotification('Video Delted Successfully!', 'success');
+      showNotification('Video Deleted Successfully!', 'success');
     } catch (error) {
       console.log(error, 'Failed to delete video');
     }
   };
 
+const handleEditSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const updatedVideo = await apiClient.editVideo(videoId as string, {
+      title,
+      description,
+    });
+    setVideo(updatedVideo); // Update the video state with the new data
+    setShowEditModal(false); // Close the modal
+    showNotification('Video Updated Successfully!', 'success');
+  } catch (error) {
+    console.error('Failed to update video:', error);
+    showNotification('Failed to update video', 'error');
+  }
+};
+
   return (
     <div className='container mx-auto p-4'>
-      <div className='max-w-[40vw] h-[50vh] '>
+      <div className='max-w-[40vw] h-[50vh]'>
         <video
           src={video?.videoUrl}
           controls
@@ -63,11 +82,15 @@ const VideoDetailPage = () => {
           onClick={() => setShowConfirm(!showConfirm)}>
           Delete
         </button>
-
-        <button className='btn btn-primary'>Edit</button>
+        <button
+          className='btn btn-primary'
+          onClick={() => setShowEditModal(true)}>
+          Edit
+        </button>
         <button className='btn btn-primary'>Share</button>
       </div>
-      {/* Confirmation Alert Box */}
+
+      {/* Delete Confirmation Modal */}
       {showConfirm && (
         <div
           role='alert'
@@ -97,6 +120,48 @@ const VideoDetailPage = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <dialog id='edit_modal' className='modal modal-open'>
+          <div className='modal-box w-11/12 max-w-5xl'>
+            <h3 className='font-bold text-lg'>Edit Video Details</h3>
+            <form onSubmit={handleEditSubmit}>
+              <fieldset className='fieldset'>
+                <legend className='fieldset-legend'>Title</legend>
+                <input
+                  type='text'
+                  className='input input-bordered w-full'
+                  placeholder='Title'
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </fieldset>
+              <fieldset className='fieldset mt-4'>
+                <legend className='fieldset-legend'>Description</legend>
+                <input
+                  type='text'
+                  className='input input-bordered w-full'
+                  placeholder='Description'
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </fieldset>
+              <div className='modal-action'>
+                <button
+                  type='button'
+                  className='btn'
+                  onClick={() => setShowEditModal(false)}>
+                  Cancel
+                </button>
+                <button type='submit' className='btn btn-primary'>
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </dialog>
       )}
     </div>
   );

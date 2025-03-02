@@ -1,5 +1,6 @@
 import { connectToDatabase } from '@/lib/db';
 import Video from '@/models/Video';
+import { error } from 'console';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -63,6 +64,50 @@ export async function DELETE(
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to delete video' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectToDatabase();
+    const { id } = await params;
+    const { title, description } = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Video id is required' },
+        { status: 400 }
+      );
+    }
+
+    const updateVideo = await Video.findByIdAndUpdate(
+      id,
+      {
+        title,
+        description,
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updateVideo) {
+      return NextResponse.json(
+        { error: 'Unable to update video!' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(updateVideo, { status: 200 });
+  } catch (error) {
+    console.error('Error updating video:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
