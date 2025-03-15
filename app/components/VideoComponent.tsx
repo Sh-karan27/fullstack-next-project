@@ -18,22 +18,21 @@ export default function VideoComponent({
   };
 
   return (
-    <div className='card bg-base-100 image-full w-full shadow-sm'>
-      {' '}
-      {/* ✅ Set width to full */}
-      <figure>
+    <div className='card bg-base-100 shadow-sm w-full'>
+      <figure className='relative aspect-video'>
         <Image
           src={video.thumbnailUrl}
           alt={video.title}
-          width={500}
-          height={300}
-          className='rounded-md'
+          fill
+          className='rounded-t-md object-cover'
         />
       </figure>
-      <div className='card-body'>
-        <h2 className='card-title'>{video.title}</h2>
-        <p>{video.description}</p>
-        <div className='card-actions justify-end'>
+      <div className='card-body p-3'>
+        <h2 className='card-title text-md'>{video.title}</h2>
+        <p className='text-sm text-base-content/70 line-clamp-2'>
+          {video.description}
+        </p>
+        <div className='card-actions justify-end mt-2'>
           <Link href={`/video/${video._id}`}>
             <button className='btn btn-primary'>Watch Now</button>
           </Link>

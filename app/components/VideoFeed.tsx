@@ -4,39 +4,55 @@ import VideoComponent from './VideoComponent';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { debounce } from 'lodash';
+import VideoSkeleton from '../ui/VideoSkeleton'; // Import the VideoSkeleton component
 
 export default function VideoFeed() {
-  const [videos, setVideos] = useState<IVideo[] | null>([]);
+  const [videos, setVideos] = useState<IVideo[] | null>(null); // Initialize as null to indicate loading state
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true); // Add a loading state
 
   useEffect(() => {
     fetchVideos();
   }, []);
 
   async function fetchVideos() {
-    const data = await apiClient.getVideos();
-    setVideos(data);
+    setIsLoading(true); // Set loading to true when fetching videos
+    try {
+      const data = await apiClient.getVideos();
+      setVideos(data);
+    } catch (error) {
+      console.error('Failed to fetch videos:', error);
+    } finally {
+      setIsLoading(false); // Set loading to false after fetching
+    }
   }
 
   async function searchVideos(query: string) {
-    const data = await apiClient.searchVideos(query);
-    setVideos(data);
+    setIsLoading(true); // Set loading to true when searching videos
+    try {
+      const data = await apiClient.searchVideos(query);
+      setVideos(data);
+    } catch (error) {
+      console.error('Failed to search videos:', error);
+    } finally {
+      setIsLoading(false); // Set loading to false after searching
+    }
   }
 
   const debouncedSearch = debounce((query: string) => {
     searchVideos(query);
-  }, 300); //This creates a debounced version of the searchVideos function that will only execute after 300ms of inactivity.
+  }, 300);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
-    setSearchQuery(query); //ensures the UI updates immediately as the user types.
-    debouncedSearch(query); //ensures the API call is made only after the user has paused typing
+    setSearchQuery(query); // Update the input field value
+    debouncedSearch(query); // Trigger the debounced search
   };
 
   const handleDelete = async (id: string) => {
     try {
       await apiClient.deleteVideo(id);
-      await fetchVideos();
+      await fetchVideos(); // Fetch updated list after deletion
     } catch (error) {
       console.error('Error deleting video:', error);
     }
@@ -72,16 +88,26 @@ export default function VideoFeed() {
         </label>
 
         {/* Video Grid Items */}
-        {videos?.map((video) => (
-          <div key={video._id} className='flex justify-center'>
-            <VideoComponent video={video} onDelete={handleDelete} />
-          </div>
-        ))}
+        {isLoading ? ( // Show skeleton loader while loading
+          Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className='flex justify-center'>
+              <VideoSkeleton />
+            </div>
+          ))
+        ) : (
+          <>
+            {videos?.map((video) => (
+              <div key={video._id} className='flex justify-center'>
+                <VideoComponent video={video} onDelete={handleDelete} />
+              </div>
+            ))}
 
-        {videos?.length === 0 && (
-          <div className='col-span-full text-center py-12'>
-            <p className='text-base-content/70'>No videos found</p>
-          </div>
+            {videos?.length === 0 && (
+              <div className='col-span-full text-center py-12'>
+                <p className='text-base-content/70'>No videos found</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </>
