@@ -3,17 +3,36 @@ import { connectToDatabase } from '@/lib/db';
 import Video, { IVideo } from '@/models/Video';
 
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await connectToDatabase();
-    const videos = await Video.find({}).sort({ createdAt: -1 }).lean();
+    const searchParams = request.nextUrl.searchParams;
+    const searchTerm = searchParams.get('q');
 
-    if (!videos || videos.length === 0) {
-      return NextResponse.json([], { status: 200 });
+    if (searchTerm) {
+      const videos = await Video.find({
+        $or: [
+          { title: { $regex: searchTerm, $options: 'i' } },
+          { description: { $regex: searchTerm, $options: 'i' } },
+        ],
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      if (!videos || videos.length === 0) {
+        return NextResponse.json([], { status: 200 });
+      }
+      return NextResponse.json(videos, { status: 200 });
+    } else {
+      const videos = await Video.find({}).sort({ createdAt: -1 }).lean();
+
+      if (!videos || videos.length === 0) {
+        return NextResponse.json([], { status: 200 });
+      }
+      return NextResponse.json(videos);
     }
-    return NextResponse.json(videos);
   } catch (error) {
     return NextResponse.json(
       {

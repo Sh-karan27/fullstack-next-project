@@ -62,6 +62,10 @@ class ApiClient {
       body: videoData,
     });
   }
+
+  async searchVideos(query: string) {
+    return this.fetch<IVideo[]>(`/videos?q=${encodeURIComponent(query)}`);
+  }
 }
 
 export const apiClient = new ApiClient();

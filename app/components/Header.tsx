@@ -25,13 +25,13 @@ export default function Header() {
         </Link>
       </div>
       <div className='flex-none gap-2'>
-        <div className='form-control'>
+        {/* <div className='form-control'>
           <input
             type='text'
             placeholder='Search'
             className='input input-bordered w-24 md:w-auto'
           />
-        </div>
+        </div> */}
         <div className='dropdown dropdown-end'>
           <div
             tabIndex={0}
