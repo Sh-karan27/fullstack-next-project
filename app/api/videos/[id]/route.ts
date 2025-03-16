@@ -1,13 +1,27 @@
+import { authOptions } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db';
+import Comment from '@/models/Comment';
 import Video from '@/models/Video';
-import { error } from 'console';
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // const session = await getServerSession(authOptions);
+
+    // if (
+    //   !session ||
+    //   !session.user ||
+    //   !session.user.email ||
+    //   !session.user.username
+    // ) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // }
+
     await connectToDatabase();
 
     const { id } = await params; // ✅ Fix: Extract `id` properly
