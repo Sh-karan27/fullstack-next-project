@@ -4,6 +4,7 @@ import { apiClient } from '@/lib/api-client';
 import { IVideo } from '@/models/Video';
 import { useParams, useRouter } from 'next/navigation';
 import { useNotification } from '@/app/components/Notification';
+import { IComment } from '@/models/Comment';
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -14,11 +15,22 @@ const VideoDetailPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [comments, setComments] = useState<IComment[] | null>(null);
   const router = useRouter();
   const { showNotification } = useNotification();
 
   useEffect(() => {
     if (!videoId) return;
+
+    const fetchVideoComments = async () => {
+      try {
+        const data = await apiClient.getComments(videoId as string);
+        setComments(data.comments);
+        console.log(data);
+      } catch (error) {
+        console.error('Failed to Load comments:', error);
+      }
+    };
 
     const fetchVideo = async () => {
       try {
@@ -34,6 +46,7 @@ const VideoDetailPage = () => {
     };
 
     fetchVideo();
+    fetchVideoComments();
   }, [videoId]);
 
   const handleDelete = async () => {
@@ -47,21 +60,21 @@ const VideoDetailPage = () => {
     }
   };
 
-const handleEditSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const updatedVideo = await apiClient.editVideo(videoId as string, {
-      title,
-      description,
-    });
-    setVideo(updatedVideo); // Update the video state with the new data
-    setShowEditModal(false); // Close the modal
-    showNotification('Video Updated Successfully!', 'success');
-  } catch (error) {
-    console.error('Failed to update video:', error);
-    showNotification('Failed to update video', 'error');
-  }
-};
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const updatedVideo = await apiClient.editVideo(videoId as string, {
+        title,
+        description,
+      });
+      setVideo(updatedVideo); // Update the video state with the new data
+      setShowEditModal(false); // Close the modal
+      showNotification('Video Updated Successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to update video:', error);
+      showNotification('Failed to update video', 'error');
+    }
+  };
 
   return (
     <div className='container mx-auto p-4'>
@@ -163,6 +176,11 @@ const handleEditSubmit = async (e: React.FormEvent) => {
           </div>
         </dialog>
       )}
+      {comments?.map((comment) => (
+        <div key={comment._id}>
+          <p>{comment.comment}</p>
+        </div>
+      ))}
     </div>
   );
 };

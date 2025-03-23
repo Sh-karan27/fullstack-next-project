@@ -1,3 +1,4 @@
+import { IComment } from '@/models/Comment';
 import { IVideo } from '@/models/Video';
 
 export type VideoFormData = Omit<IVideo, '_id'>;
@@ -62,6 +63,10 @@ class ApiClient {
       method: 'POST',
       body: videoData,
     });
+  }
+
+  async getComments(id: string) {
+    return this.fetch<{ comments: IComment[] }>(`/videos/${id}/comments`);
   }
 
   async searchVideos(query: string) {
