@@ -55,6 +55,7 @@ export async function GET(
       },
     ]);
 
+    console.log('Video Comments:', videoComments);
     return NextResponse.json({ comments: videoComments }, { status: 200 });
   } catch (error) {
     console.error('Error fetching comments:', error);

@@ -3,9 +3,7 @@ import mongoose, { Schema, model, models } from 'mongoose';
 export interface IComment {
   _id: mongoose.Types.ObjectId;
   comment: string;
-  // owner: mongoose.Types.ObjectId;
-  // username?: string;
-  // email?: string;
+  posted_by: mongoose.Types.ObjectId;
   videoId: mongoose.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
@@ -14,7 +12,7 @@ export interface IComment {
 const commentSchema = new Schema<IComment>(
   {
     comment: { type: String, required: true },
-    // owner: { type: Schema.Types.ObjectId, ref: 'User' },
+    posted_by: { type: Schema.Types.ObjectId, ref: 'User' },
     // username: { type: String, required: true },
     videoId: { type: Schema.Types.ObjectId, ref: 'Video' },
     // email: { type: String, required: true },

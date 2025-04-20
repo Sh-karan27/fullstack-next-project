@@ -20,6 +20,10 @@ const VideoDetailPage = () => {
   const { showNotification } = useNotification();
 
   useEffect(() => {
+    console.log(comments);
+  }, []);
+
+  useEffect(() => {
     if (!videoId) return;
 
     const fetchVideoComments = async () => {
@@ -77,19 +81,26 @@ const VideoDetailPage = () => {
   };
 
   return (
-    <div className='container mx-auto p-4'>
-      <div className='max-w-[40vw] h-[50vh]'>
+    <div className='container mx-auto px-4 py-8'>
+      {/* Video Player */}
+      <div className='max-w-4xl w-full mx-auto h-[60vh] rounded-lg overflow-hidden shadow-lg mb-6'>
         <video
           src={video?.videoUrl}
           controls
-          className='h-full w-full mx-auto rounded-lg shadow-lg'
+          className='h-full w-full rounded-lg'
         />
       </div>
-      <div className='flex flex-col items-left justify-center p-4'>
-        <h1 className='text-3xl font-bold mb-4'>{video?.title}</h1>
-        <p className='mt-4 text-gray-500'>{video?.description}</p>
+
+      {/* Title and Description */}
+      <div className='max-w-4xl w-full mx-auto px-4'>
+        <h1 className='text-3xl font-bold mb-2'>{video?.title}</h1>
+        <p className='text-base text-gray-500 leading-relaxed'>
+          {video?.description}
+        </p>
       </div>
-      <div className='flex gap-2'>
+
+      {/* Action Buttons */}
+      <div className='max-w-4xl w-full mx-auto flex gap-4 mt-6 px-4'>
         <button
           className='btn btn-primary'
           onClick={() => setShowConfirm(!showConfirm)}>
@@ -107,7 +118,7 @@ const VideoDetailPage = () => {
       {showConfirm && (
         <div
           role='alert'
-          className='alert alert-vertical sm:alert-horizontal absolute top-0 left-0 right-0 mx-auto w-96 bg-base-200 shadow-md z-50'>
+          className='alert alert-vertical sm:alert-horizontal fixed top-4 left-1/2 -translate-x-1/2 w-96 bg-base-200 shadow-md z-50'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
@@ -120,7 +131,7 @@ const VideoDetailPage = () => {
               d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path>
           </svg>
           <span>Are you sure you want to delete this video?</span>
-          <div>
+          <div className='flex gap-2'>
             <button
               className='btn btn-sm'
               onClick={() => setShowConfirm(false)}>
@@ -138,11 +149,11 @@ const VideoDetailPage = () => {
       {/* Edit Modal */}
       {showEditModal && (
         <dialog id='edit_modal' className='modal modal-open'>
-          <div className='modal-box w-11/12 max-w-5xl'>
+          <div className='modal-box w-11/12 max-w-3xl space-y-4'>
             <h3 className='font-bold text-lg'>Edit Video Details</h3>
-            <form onSubmit={handleEditSubmit}>
-              <fieldset className='fieldset'>
-                <legend className='fieldset-legend'>Title</legend>
+            <form onSubmit={handleEditSubmit} className='space-y-4'>
+              <div>
+                <label className='block text-sm font-medium mb-1'>Title</label>
                 <input
                   type='text'
                   className='input input-bordered w-full'
@@ -150,9 +161,11 @@ const VideoDetailPage = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
-              </fieldset>
-              <fieldset className='fieldset mt-4'>
-                <legend className='fieldset-legend'>Description</legend>
+              </div>
+              <div>
+                <label className='block text-sm font-medium mb-1'>
+                  Description
+                </label>
                 <input
                   type='text'
                   className='input input-bordered w-full'
@@ -160,8 +173,8 @@ const VideoDetailPage = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
-              </fieldset>
-              <div className='modal-action'>
+              </div>
+              <div className='modal-action gap-4'>
                 <button
                   type='button'
                   className='btn'
@@ -176,11 +189,78 @@ const VideoDetailPage = () => {
           </div>
         </dialog>
       )}
-      {comments?.map((comment) => (
-        <div key={comment._id}>
-          <p>{comment.comment}</p>
-        </div>
-      ))}
+
+      {/* Comments Section */}
+      <div className='max-w-4xl w-full mx-auto mt-12 px-4'>
+        <h2 className='text-2xl font-semibold mb-4'>Comments</h2>
+        <ul className='divide-y divide-gray-300 rounded-lg bg-base-100 shadow'>
+          {comments?.map((comment, index) => (
+            <li
+              className='flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 gap-3'
+              key={`${comment._id} + ${index}`}>
+              <p className='text-sm text-gray-600'>{comment.comment}</p>
+              <div className='flex'>
+                {/* Like Button */}
+                <div className='tooltip tooltip-top' data-tip='Like'>
+                  <button className='btn btn-square btn-ghost'>
+                    <svg
+                      className='size-[1.2em]'
+                      xmlns='http://www.w3.org/2000/svg'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth='2'
+                        d='M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z'
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Reply/Edit Button */}
+                <div className='tooltip tooltip-top' data-tip='Edit'>
+                  <button className='btn btn-square btn-ghost'>
+                    <svg
+                      className='size-[1.2em]'
+                      xmlns='http://www.w3.org/2000/svg'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth='2'
+                        d='M11 5H6a2 2 0 00-2 2v11.5a.5.5 0 00.8.4l4.2-3.2h5a2 2 0 002-2V10m0-5l3 3m0 0l-8 8H9v-3l8-8z'
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Add Comment Button with Tooltip */}
+                <div className='tooltip tooltip-top' data-tip='Add'>
+                  <button className='btn btn-square btn-ghost'>
+                    <svg
+                      className='size-[1.2em]'
+                      xmlns='http://www.w3.org/2000/svg'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'>
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth='2'
+                        d='M12 4v16m8-8H4'
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
