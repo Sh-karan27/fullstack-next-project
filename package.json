@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "antd": "^5.24.9",
     "bcryptjs": "^2.4.3",
     "imagekit": "^6.0.0",
     "imagekitio-next": "^1.0.1",

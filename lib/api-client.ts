@@ -1,10 +1,10 @@
-import { IComment } from '@/models/Comment';
-import { IVideo } from '@/models/Video';
+import { IComment } from "@/models/Comment";
+import { IVideo } from "@/models/Video";
 
-export type VideoFormData = Omit<IVideo, '_id'>;
+export type VideoFormData = Omit<IVideo, "_id">;
 
 type FetchOptions = {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   body?: any;
   headers?: Record<string, string>;
 };
@@ -14,10 +14,10 @@ class ApiClient {
     endpoint: string,
     options: FetchOptions = {}
   ): Promise<T> {
-    const { method = 'GET', body, headers = {} } = options;
+    const { method = "GET", body, headers = {} } = options;
 
     const defaultHeaders = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...headers,
     };
 
@@ -35,7 +35,7 @@ class ApiClient {
   }
 
   async getVideos() {
-    return this.fetch<IVideo[]>('/videos');
+    return this.fetch<IVideo[]>("/videos");
   }
 
   async editVideo(
@@ -43,7 +43,7 @@ class ApiClient {
     videoData: { title: string; description: string }
   ) {
     return this.fetch<IVideo>(`/videos/${id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: videoData,
     });
   }
@@ -54,19 +54,26 @@ class ApiClient {
 
   async deleteVideo(id: string) {
     return this.fetch<IVideo>(`/videos/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
   async createVideo(videoData: VideoFormData) {
-    return this.fetch<IVideo>('/videos', {
-      method: 'POST',
+    return this.fetch<IVideo>("/videos", {
+      method: "POST",
       body: videoData,
     });
   }
 
   async getComments(id: string) {
     return this.fetch<{ comments: IComment[] }>(`/videos/${id}/comments`);
+  }
+
+  async postComment(video_id: string, comment: string) {
+    return this.fetch<{ comments: IComment }>(`/videos/${video_id}/comments`, {
+      method: "POST",
+      body: { comment },
+    });
   }
 
   async searchVideos(query: string) {
