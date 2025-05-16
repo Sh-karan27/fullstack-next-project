@@ -13,6 +13,12 @@ export async function GET(
   try {
     await connectToDatabase();
 
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     if (!id) {
@@ -31,34 +37,7 @@ export async function GET(
           videoId: new mongoose.Types.ObjectId(id), // Match by `videoId`
         },
       },
-      {
-        $lookup: {
-          from: "videos",
-          localField: "videoId",
-          foreignField: "_id",
-          as: "videoDetails",
-        },
-      },
-      {
-        $unwind: "$videoDetails",
-      },
-      {
-        $sort: { createdAt: -1 },
-      },
-      {
-        $project: {
-          comment: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          "videoDetails.title": 1,
-          "videoDetails.description": 1,
-          "videoDetails.videoUrl": 1,
-          "videoDetails.thumbnailUrl": 1,
-        },
-      },
     ]);
-
-    // console.log('Video Comments:', videoComments);
     return NextResponse.json({ comments: videoComments }, { status: 200 });
   } catch (error) {
     console.error("Error fetching comments:", error);
@@ -74,12 +53,13 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    // const session = await getServerSession(authOptions);
-    // if (!session) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
-
     await connectToDatabase();
+
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { id } = await params;
 
@@ -98,11 +78,13 @@ export async function POST(
     }
 
     const newComment = await Comment.create({
-      // email: session.user.email,
-      // username: session.user.username,
+      posted_by: session?.user.id,
       comment,
-      // owner: session.user.id,
       videoId: id,
+      user: {
+        username: session.user.username,
+        avatar: session.user.avatar,
+      },
     });
 
     return NextResponse.json(

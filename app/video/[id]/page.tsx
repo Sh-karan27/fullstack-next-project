@@ -254,7 +254,19 @@ const VideoDetailPage = () => {
               className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 gap-3"
               key={`${comment._id} + ${index}`}
             >
-              <p className="text-sm text-gray-300">{comment.comment}</p>
+              <div className="flex items-start justify-center gap-2">
+                <img
+                  src={comment.user.avatar}
+                  alt={comment.user.username}
+                  className="w-8 h-8 rounded-full"
+                />
+                <div>
+                  <span className="font-bold text-xl text-gray-700">
+                    {comment.user.username}
+                    <p className="text-sm text-gray-300">{comment.comment}</p>
+                  </span>
+                </div>
+              </div>
               <div className="flex">
                 {/* Like Button */}
                 <div className="tooltip tooltip-top" data-tip="Like">
@@ -297,7 +309,7 @@ const VideoDetailPage = () => {
                 </div>
 
                 {/* Add Comment Button with Tooltip */}
-                <div className="tooltip tooltip-top" data-tip="Add">
+                <div className="tooltip tooltip-top" data-tip="Delete">
                   <button className="btn btn-square btn-ghost">
                     <svg
                       className="size-[1.2em]"
@@ -310,7 +322,7 @@ const VideoDetailPage = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth="2"
-                        d="M12 4v16m8-8H4"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0h-1.5a1.5 1.5 0 00-3 0H9a1.5 1.5 0 00-3 0H5"
                       />
                     </svg>
                   </button>
