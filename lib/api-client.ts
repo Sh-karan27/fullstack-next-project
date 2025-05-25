@@ -80,6 +80,12 @@ class ApiClient {
     return this.fetch<IVideo[]>(`/videos?q=${encodeURIComponent(query)}`);
   }
   //encoded string is included in the URL, it ensures that the special characters ( , &) are treated as part of the query string and not as URL delimiters.
+
+  async deleteComment(id: string) {
+    return this.fetch<IComment>(`/comments/${id}`, {
+      method: "DELETE",
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

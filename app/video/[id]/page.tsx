@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useNotification } from "@/app/components/Notification";
 import { IComment } from "@/models/Comment";
 import { Modal } from "antd";
+import { useSession } from "next-auth/react";
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -20,7 +21,13 @@ const VideoDetailPage = () => {
   const router = useRouter();
   const { showNotification } = useNotification();
   const [commentInput, setCommentInput] = useState("");
+  const { data: session } = useSession();
+  const [deleteLoader, setDeleteLoader] = useState("");
   const video_id = video?._id || null;
+
+  useEffect(() => {
+    console.log(session);
+  }, [session]);
 
   useEffect(() => {
     console.log(comments);
@@ -37,8 +44,6 @@ const VideoDetailPage = () => {
     try {
       const data = await apiClient.getAVideo(videoId as string);
       setVideo(data);
-      setTitle(data.title);
-      setDescription(data.description);
     } catch (error) {
       setError("Failed to Load video");
     } finally {
@@ -102,6 +107,21 @@ const VideoDetailPage = () => {
     }
   };
 
+  const deleteComment = async (id: string) => {
+    setDeleteLoader(id);
+    try {
+      const response = await apiClient.deleteComment(id);
+      console.log(response);
+      await fetchVideoComments();
+      setDeleteLoader("");
+      showNotification("Comment deleted!", "success");
+    } catch (error) {
+      console.log(error);
+      setDeleteLoader("");
+      showNotification("Failed to delete comment", "error");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Video Player */}
@@ -129,7 +149,13 @@ const VideoDetailPage = () => {
         </button>
         <button
           className="btn btn-primary"
-          onClick={() => setShowEditModal(true)}
+          onClick={() => {
+            if (video !== null) {
+              setTitle(video?.title);
+              setDescription(video?.description);
+            }
+            setShowEditModal(true);
+          }}
         >
           Edit
         </button>
@@ -310,22 +336,32 @@ const VideoDetailPage = () => {
 
                 {/* Add Comment Button with Tooltip */}
                 <div className="tooltip tooltip-top" data-tip="Delete">
-                  <button className="btn btn-square btn-ghost">
-                    <svg
-                      className="size-[1.2em]"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                  {session &&
+                  session.user.id === comment.posted_by.toString() ? (
+                    <button
+                      className="btn btn-square btn-ghost"
+                      onClick={() => deleteComment(comment._id.toString())}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0h-1.5a1.5 1.5 0 00-3 0H9a1.5 1.5 0 00-3 0H5"
-                      />
-                    </svg>
-                  </button>
+                      {deleteLoader === comment._id.toString() ? (
+                        <span className="loading loading-infinity loading-sm"></span>
+                      ) : (
+                        <svg
+                          className="size-[1.2em]"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0h-1.5a1.5 1.5 0 00-3 0H9a1.5 1.5 0 00-3 0H5"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </li>
