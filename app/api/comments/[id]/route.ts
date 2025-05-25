@@ -114,9 +114,7 @@ export async function DELETE(
     await connectToDatabase();
     const { id } = await params;
     const session = await getServerSession(authOptions);
-    console.log("sessions", session);
 
-    // Check if the user is authenticated
     if (
       !session ||
       !session.user ||
@@ -126,9 +124,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("comment id", id);
-
-    // Validate the comment ID
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "Invalid comment ID" },
@@ -136,24 +131,33 @@ export async function DELETE(
       );
     }
 
-    // // Find the comment and ensure the user is the owner
     const comment = await Comment.findById(id);
 
     if (!comment) {
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
 
-    console.log(comment);
+    // Fetch the associated video to check if the current user is the video owner
+    const video = await Video.findById(comment.videoId);
 
-    if (comment.posted_by.toString() !== session.user.id) {
+    if (!video) {
+      return NextResponse.json(
+        { error: "Associated video not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if the user is either the comment owner or the video owner
+    const isCommentOwner = comment.posted_by.toString() === session.user.id;
+    const isVideoOwner = video.posted_by.id === session.user.id;
+
+    if (!isCommentOwner && !isVideoOwner) {
       return NextResponse.json(
         { error: "Unauthorized to delete this comment" },
         { status: 403 }
       );
     }
-    console.log("Authorized to delete this comment");
 
-    // // Delete the comment
     await Comment.findByIdAndDelete(id);
 
     return NextResponse.json(

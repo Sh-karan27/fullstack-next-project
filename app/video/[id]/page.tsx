@@ -141,24 +141,29 @@ const VideoDetailPage = () => {
       </div>
       {/* Action Buttons */}
       <div className="max-w-4xl w-full mx-auto flex gap-4 mt-6 px-4">
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowConfirm(!showConfirm)}
-        >
-          Delete
-        </button>
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            if (video !== null) {
-              setTitle(video?.title);
-              setDescription(video?.description);
-            }
-            setShowEditModal(true);
-          }}
-        >
-          Edit
-        </button>
+        {session && session.user.id === video?.posted_by.id && (
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowConfirm(!showConfirm)}
+          >
+            Delete
+          </button>
+        )}
+        {session && session.user.id === video?.posted_by.id && (
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              if (video !== null) {
+                setTitle(video?.title);
+                setDescription(video?.description);
+              }
+              setShowEditModal(true);
+            }}
+          >
+            Edit
+          </button>
+        )}
+
         <button className="btn btn-primary">Share</button>
       </div>
       {/* Delete Confirmation Modal */}
@@ -197,6 +202,7 @@ const VideoDetailPage = () => {
           </div>
         </div>
       )}
+
       {/* Edit Modal */}
       {showEditModal && (
         <dialog id="edit_modal" className="modal modal-open">
@@ -336,8 +342,9 @@ const VideoDetailPage = () => {
 
                 {/* Add Comment Button with Tooltip */}
                 <div className="tooltip tooltip-top" data-tip="Delete">
-                  {session &&
-                  session.user.id === comment.posted_by.toString() ? (
+                  {(session &&
+                    session.user.id === comment.posted_by.toString()) ||
+                  session?.user.id === video?.posted_by.id ? (
                     <button
                       className="btn btn-square btn-ghost"
                       onClick={() => deleteComment(comment._id.toString())}
