@@ -132,6 +132,15 @@ const VideoDetailPage = () => {
           className="h-full w-full rounded-lg"
         />
       </div>
+      <div>
+        <div className="max-w-4xl w-full mx-auto px-4 mb-6 flex items-center justify-between">
+          <div className="text-base text-gray-500 flex items-center gap-2">
+            <img src={session?.user?.avatar} alt="avatar" className="w-8 h-8 rounded-full" />
+            <p>{video?.posted_by.username}</p>
+          </div>
+          <button className="btn btn-primary">Follow</button>
+        </div>
+      </div>
       {/* Title and Description */}
       <div className="max-w-4xl w-full mx-auto px-4">
         <h1 className="text-3xl font-bold mb-2">{video?.title}</h1>

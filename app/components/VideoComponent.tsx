@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { IVideo } from '@/models/Video';
+import { useSession } from 'next-auth/react';
 
 interface VideoComponentProps {
   video: IVideo;
@@ -12,7 +13,7 @@ export default function VideoComponent({
   onDelete,
 }: VideoComponentProps) {
   const id = video?._id?.toString();
-
+  const session = useSession()
   const deleteVideo = async () => {
     await onDelete(id as string);
   };
@@ -36,9 +37,13 @@ export default function VideoComponent({
           <Link href={`/video/${video._id}`}>
             <button className='btn btn-primary'>Watch Now</button>
           </Link>
-          <button className='btn btn-primary' onClick={deleteVideo}>
-            Delete
-          </button>
+          {
+            session?.data?.user?.id === video.posted_by.id && (    
+              <button className='btn btn-primary' onClick={deleteVideo}>
+                Delete
+              </button>
+            )
+          }
         </div>
       </div>
     </div>
