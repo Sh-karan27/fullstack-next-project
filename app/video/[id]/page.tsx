@@ -124,6 +124,28 @@ const VideoDetailPage = () => {
     }
   };
 
+  const handleSaveEdit = async () => {
+    if (!commentToEdit || !editFieldCommentInput.trim()) {
+      showNotification("Comment field is empty", "error");
+      return;
+    }
+    console.log("Comment to edit:", editFieldCommentInput, commentToEdit);
+    try {
+      const response = await apiClient.editComment(
+        commentToEdit,
+        editFieldCommentInput
+      );
+      console.log(response);
+      setCommentToEdit(null);
+      setEditFieldCommentInput("");
+      fetchVideoComments();
+      showNotification("Comment updated!", "success");
+    } catch (error) {
+      console.error("Failed to update comment:", error);
+      showNotification("Failed to update comment", "error");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Video Player */}
@@ -137,7 +159,11 @@ const VideoDetailPage = () => {
       <div>
         <div className="max-w-4xl w-full mx-auto px-4 mb-6 flex items-center justify-between">
           <div className="text-base text-gray-500 flex items-center gap-2">
-            <img src={session?.user?.avatar} alt="avatar" className="w-8 h-8 rounded-full" />
+            <img
+              src={session?.user?.avatar}
+              alt="avatar"
+              className="w-8 h-8 rounded-full"
+            />
             <p>{video?.posted_by.username}</p>
           </div>
           <button className="btn btn-primary">Follow</button>
@@ -291,7 +317,7 @@ const VideoDetailPage = () => {
             </div>
           </>
         )}
-        <ul className=" ">
+        <ul>
           {comments?.map((comment, index) => (
             <li
               className=" flex flex-col sm:flex-row justify-between items-start sm:items-center m-4 p-4 gap-3 rounded-lg bg-base-100 shadow"
@@ -304,69 +330,15 @@ const VideoDetailPage = () => {
                       src={comment.user.avatar}
                       alt={comment.user.username}
                       className="w-8 h-8 rounded-full"
-                      />
+                    />
                     <span className="font-bold text-xl text-gray-700">
                       {comment.user.username}
                     </span>
                   </div>
                   <div className="flex">
-                {/* Like Button */}
-                <div className="tooltip tooltip-top" data-tip="Like">
-                  <button className="btn btn-square btn-ghost">
-                    <svg
-                      className="size-[1.2em]"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Reply/Edit Button */}
-                <div className="tooltip tooltip-top" data-tip="Edit">
-                  <button className="btn btn-square btn-ghost"
-                        onClick={() => {
-                          setCommentToEdit(comment?._id.toString())
-                          setEditFieldCommentInput(comment?.comment)
-                        }}
-                  >
-                    <svg
-                      className="size-[1.2em]"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M11 5H6a2 2 0 00-2 2v11.5a.5.5 0 00.8.4l4.2-3.2h5a2 2 0 002-2V10m0-5l3 3m0 0l-8 8H9v-3l8-8z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Add Comment Button with Tooltip */}
-                <div className="tooltip tooltip-top" data-tip="Delete">
-                  {(session &&
-                    session.user.id === comment.posted_by.toString()) ||
-                  session?.user.id === video?.posted_by.id ? (
-                    <button
-                      className="btn btn-square btn-ghost"
-                      onClick={() => deleteComment(comment._id.toString())}
-                    >
-                      {deleteLoader === comment._id.toString() ? (
-                        <span className="loading loading-infinity loading-sm"></span>
-                      ) : (
+                    {/* Like Button */}
+                    <div className="tooltip tooltip-top" data-tip="Like">
+                      <button className="btn btn-square btn-ghost">
                         <svg
                           className="size-[1.2em]"
                           xmlns="http://www.w3.org/2000/svg"
@@ -378,37 +350,101 @@ const VideoDetailPage = () => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0h-1.5a1.5 1.5 0 00-3 0H9a1.5 1.5 0 00-3 0H5"
+                            d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"
                           />
                         </svg>
-                      )}
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-                </div>
-                {
-                    commentToEdit === comment._id.toString() ? 
-                    <div className="flex items-center justify-between w-full gap-2">
-                      <input
-                        className=" border-gray-300  w-full border-b  bg-transparent focus:outline-none"
-                        type="text"
-                        placeholder="Add Comment "
-                        value={editFieldCommentInput}
-                        onChange={(e) => setEditFieldCommentInput(e.target.value)}
-                      />
-                      <div className="flex items-center gap-4">
-
-                    <button className="btn ptn-primary ">save</button>
-                    <button className="btn ptn-primary ">cancel</button>
-                      </div>
+                      </button>
                     </div>
-                    
-                    : <p className="text-sm text-gray-300">{comment.comment}</p>
 
-                  }
+                    {/* Reply/Edit Button */}
+                    <div className="tooltip tooltip-top" data-tip="Edit">
+                      <button
+                        className="btn btn-square btn-ghost"
+                        onClick={() => {
+                          setCommentToEdit(comment?._id.toString());
+                          setEditFieldCommentInput(comment?.comment);
+                        }}
+                      >
+                        <svg
+                          className="size-[1.2em]"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M11 5H6a2 2 0 00-2 2v11.5a.5.5 0 00.8.4l4.2-3.2h5a2 2 0 002-2V10m0-5l3 3m0 0l-8 8H9v-3l8-8z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Add Comment Button with Tooltip */}
+                    <div className="tooltip tooltip-top" data-tip="Delete">
+                      {(session &&
+                        session.user.id === comment.posted_by.toString()) ||
+                      session?.user.id === video?.posted_by.id ? (
+                        <button
+                          className="btn btn-square btn-ghost"
+                          onClick={() => deleteComment(comment._id.toString())}
+                        >
+                          {deleteLoader === comment._id.toString() ? (
+                            <span className="loading loading-infinity loading-sm"></span>
+                          ) : (
+                            <svg
+                              className="size-[1.2em]"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0h-1.5a1.5 1.5 0 00-3 0H9a1.5 1.5 0 00-3 0H5"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+                {commentToEdit === comment._id.toString() ? (
+                  <div className="flex items-center justify-between w-full gap-2">
+                    <input
+                      className=" border-gray-300  w-full border-b  bg-transparent focus:outline-none"
+                      type="text"
+                      placeholder="Add Comment "
+                      value={editFieldCommentInput}
+                      onChange={(e) => setEditFieldCommentInput(e.target.value)}
+                    />
+                    <div className="flex items-center gap-4">
+                      <button
+                        className="btn ptn-primary"
+                        onClick={handleSaveEdit}
+                      >
+                        save
+                      </button>
+                      <button
+                        className="btn ptn-primary "
+                        onClick={() => {
+                          setCommentToEdit(null);
+                          setEditFieldCommentInput(comment?.comment);
+                        }}
+                      >
+                        cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-300">{comment.comment}</p>
+                )}
               </div>
-              
             </li>
           ))}
         </ul>

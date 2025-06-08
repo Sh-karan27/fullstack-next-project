@@ -87,10 +87,11 @@ class ApiClient {
     });
   }
 
-  async editComment(id:string, newCommentText:string) {
+  async editComment(id: string, comment: string) {
+    console.log(id, comment, "id and comment in editComment");
     return this.fetch<IComment>(`/comments/${id}`, {
       method: "PATCH",
-      body: newCommentText
+      body: { comment }, // Send as JSON object with key "comment"
     });
   }
 }

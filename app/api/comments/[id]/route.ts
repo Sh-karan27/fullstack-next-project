@@ -44,12 +44,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    
     await connectToDatabase();
-    const { id } = params;
+    const { id } = params; // just get id from params, no await
     const session = await getServerSession(authOptions);
 
-    // Check if the user is authenticated
     if (
       !session ||
       !session.user ||
@@ -58,9 +56,11 @@ export async function PATCH(
     ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
     const { comment: newCommentText } = await request.json();
 
-    // Validate the comment ID and new comment text
+    console.log(newCommentText, "newCommentText");
+
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "Invalid comment ID" },
@@ -75,21 +75,22 @@ export async function PATCH(
       );
     }
 
-    // Find the comment and ensure the user is the owner
     const comment = await Comment.findById(id);
 
     if (!comment) {
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
+    console.log(comment, "comment owner");
+    console.log(session, "session user id");
 
-    if (comment.owner.toString() !== session.user.id) {
+    if (comment.posted_by.toString() !== session.user.id) {
       return NextResponse.json(
         { error: "Unauthorized to edit this comment" },
         { status: 403 }
       );
     }
 
-    // Update the comment
+    // Update comment text
     comment.comment = newCommentText;
     await comment.save();
 
@@ -112,7 +113,7 @@ export async function DELETE(
 ) {
   try {
     await connectToDatabase();
-    const { id } = await params;
+    const { id } = params;
     const session = await getServerSession(authOptions);
 
     if (
