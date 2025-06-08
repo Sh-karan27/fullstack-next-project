@@ -24,6 +24,8 @@ const VideoDetailPage = () => {
   const { data: session } = useSession();
   const [deleteLoader, setDeleteLoader] = useState("");
   const video_id = video?._id || null;
+  const [commentToEdit, setCommentToEdit] = useState<string | null>(null);
+  const [editFieldCommentInput, setEditFieldCommentInput] = useState("");
 
   useEffect(() => {
     console.log(session);
@@ -289,26 +291,25 @@ const VideoDetailPage = () => {
             </div>
           </>
         )}
-        <ul className="divide-y divide-gray-300 rounded-lg bg-base-100 shadow">
+        <ul className=" ">
           {comments?.map((comment, index) => (
             <li
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 gap-3"
+              className=" flex flex-col sm:flex-row justify-between items-start sm:items-center m-4 p-4 gap-3 rounded-lg bg-base-100 shadow"
               key={`${comment._id} + ${index}`}
             >
-              <div className="flex items-start justify-center gap-2">
-                <img
-                  src={comment.user.avatar}
-                  alt={comment.user.username}
-                  className="w-8 h-8 rounded-full"
-                />
-                <div>
-                  <span className="font-bold text-xl text-gray-700">
-                    {comment.user.username}
-                    <p className="text-sm text-gray-300">{comment.comment}</p>
-                  </span>
-                </div>
-              </div>
-              <div className="flex">
+              <div className="flex items-start justify-center gap-2 flex-col w-full">
+                <div className="flex items-center justify-between w-full">
+                  <div>
+                    <img
+                      src={comment.user.avatar}
+                      alt={comment.user.username}
+                      className="w-8 h-8 rounded-full"
+                      />
+                    <span className="font-bold text-xl text-gray-700">
+                      {comment.user.username}
+                    </span>
+                  </div>
+                  <div className="flex">
                 {/* Like Button */}
                 <div className="tooltip tooltip-top" data-tip="Like">
                   <button className="btn btn-square btn-ghost">
@@ -331,7 +332,12 @@ const VideoDetailPage = () => {
 
                 {/* Reply/Edit Button */}
                 <div className="tooltip tooltip-top" data-tip="Edit">
-                  <button className="btn btn-square btn-ghost">
+                  <button className="btn btn-square btn-ghost"
+                        onClick={() => {
+                          setCommentToEdit(comment?._id.toString())
+                          setEditFieldCommentInput(comment?.comment)
+                        }}
+                  >
                     <svg
                       className="size-[1.2em]"
                       xmlns="http://www.w3.org/2000/svg"
@@ -380,6 +386,29 @@ const VideoDetailPage = () => {
                   ) : null}
                 </div>
               </div>
+                </div>
+                {
+                    commentToEdit === comment._id.toString() ? 
+                    <div className="flex items-center justify-between w-full gap-2">
+                      <input
+                        className=" border-gray-300  w-full border-b  bg-transparent focus:outline-none"
+                        type="text"
+                        placeholder="Add Comment "
+                        value={editFieldCommentInput}
+                        onChange={(e) => setEditFieldCommentInput(e.target.value)}
+                      />
+                      <div className="flex items-center gap-4">
+
+                    <button className="btn ptn-primary ">save</button>
+                    <button className="btn ptn-primary ">cancel</button>
+                      </div>
+                    </div>
+                    
+                    : <p className="text-sm text-gray-300">{comment.comment}</p>
+
+                  }
+              </div>
+              
             </li>
           ))}
         </ul>

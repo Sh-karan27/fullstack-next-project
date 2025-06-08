@@ -86,6 +86,13 @@ class ApiClient {
       method: "DELETE",
     });
   }
+
+  async editComment(id:string, newCommentText:string) {
+    return this.fetch<IComment>(`/comments/${id}`, {
+      method: "PATCH",
+      body: newCommentText
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

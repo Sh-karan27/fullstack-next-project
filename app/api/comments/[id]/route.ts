@@ -44,6 +44,9 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    
+    await connectToDatabase();
+    const { id } = params;
     const session = await getServerSession(authOptions);
 
     // Check if the user is authenticated
@@ -55,9 +58,6 @@ export async function PATCH(
     ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    await connectToDatabase();
-    const { id } = params;
     const { comment: newCommentText } = await request.json();
 
     // Validate the comment ID and new comment text
