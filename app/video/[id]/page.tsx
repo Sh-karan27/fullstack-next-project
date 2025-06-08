@@ -7,6 +7,7 @@ import { useNotification } from "@/app/components/Notification";
 import { IComment } from "@/models/Comment";
 import { Modal } from "antd";
 import { useSession } from "next-auth/react";
+import { Session } from "next-auth";
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -145,6 +146,64 @@ const VideoDetailPage = () => {
       showNotification("Failed to update comment", "error");
     }
   };
+
+  const getCommentActions = (
+    comment: IComment,
+    session: Session | null,
+    video: IVideo,
+    deleteLoader: string
+  ) => [
+    {
+      name: "Edit",
+      show: session?.user?.id === comment.posted_by.toString(),
+      icon: (
+        <svg
+          className="size-[1.2em]"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M11 5H6a2 2 0 00-2 2v11.5a.5.5 0 00.8.4l4.2-3.2h5a2 2 0 002-2V10m0-5l3 3m0 0l-8 8H9v-3l8-8z"
+          />
+        </svg>
+      ),
+      onClick: () => {
+        setCommentToEdit(comment._id.toString());
+        setEditFieldCommentInput(comment.comment);
+      },
+    },
+    {
+      name: "Delete",
+      show:
+        session?.user?.id === comment.posted_by.toString() ||
+        session?.user?.id === video?.posted_by.id,
+      icon:
+        deleteLoader === comment._id.toString() ? (
+          <span className="loading loading-infinity loading-sm"></span>
+        ) : (
+          <svg
+            className="size-[1.2em]"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0h-1.5a1.5 1.5 0 00-3 0H9a1.5 1.5 0 00-3 0H5"
+            />
+          </svg>
+        ),
+      onClick: () => deleteComment(comment._id.toString()),
+    },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -335,83 +394,24 @@ const VideoDetailPage = () => {
                       {comment.user.username}
                     </span>
                   </div>
-                  <div className="flex">
-                    {/* Like Button */}
-                    <div className="tooltip tooltip-top" data-tip="Like">
-                      <button className="btn btn-square btn-ghost">
-                        <svg
-                          className="size-[1.2em]"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Reply/Edit Button */}
-                    <div className="tooltip tooltip-top" data-tip="Edit">
-                      <button
-                        className="btn btn-square btn-ghost"
-                        onClick={() => {
-                          setCommentToEdit(comment?._id.toString());
-                          setEditFieldCommentInput(comment?.comment);
-                        }}
-                      >
-                        <svg
-                          className="size-[1.2em]"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M11 5H6a2 2 0 00-2 2v11.5a.5.5 0 00.8.4l4.2-3.2h5a2 2 0 002-2V10m0-5l3 3m0 0l-8 8H9v-3l8-8z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Add Comment Button with Tooltip */}
-                    <div className="tooltip tooltip-top" data-tip="Delete">
-                      {(session &&
-                        session.user.id === comment.posted_by.toString()) ||
-                      session?.user.id === video?.posted_by.id ? (
-                        <button
-                          className="btn btn-square btn-ghost"
-                          onClick={() => deleteComment(comment._id.toString())}
-                        >
-                          {deleteLoader === comment._id.toString() ? (
-                            <span className="loading loading-infinity loading-sm"></span>
-                          ) : (
-                            <svg
-                              className="size-[1.2em]"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
+                  <div className="flex gap-2">
+                    {video &&
+                      getCommentActions(comment, session, video, deleteLoader)
+                        .filter((action) => action.show)
+                        .map((action, i) => (
+                          <div
+                            key={i}
+                            className="tooltip tooltip-top"
+                            data-tip={action.name}
+                          >
+                            <button
+                              className="btn btn-square btn-ghost"
+                              onClick={action.onClick}
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0h-1.5a1.5 1.5 0 00-3 0H9a1.5 1.5 0 00-3 0H5"
-                              />
-                            </svg>
-                          )}
-                        </button>
-                      ) : null}
-                    </div>
+                              {action.icon}
+                            </button>
+                          </div>
+                        ))}
                   </div>
                 </div>
                 {commentToEdit === comment._id.toString() ? (
