@@ -9,6 +9,7 @@ import { Modal } from "antd";
 import { useSession } from "next-auth/react";
 import { Session } from "next-auth";
 import { GoReply } from "react-icons/go";
+import { formatTimeAgo } from "@/app/utils/formatTimeAgo";
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -28,6 +29,8 @@ const VideoDetailPage = () => {
   const video_id = video?._id || null;
   const [commentToEdit, setCommentToEdit] = useState<string | null>(null);
   const [editFieldCommentInput, setEditFieldCommentInput] = useState("");
+  const [showReplyFiled, setShowReplyField] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
 
   useEffect(() => {
     console.log(session);
@@ -217,7 +220,7 @@ const VideoDetailPage = () => {
       name: "Reply",
       show: session?.user?.id !== comment.posted_by.toString(),
       icon: <GoReply className="size-[1.2em]" />,
-      onClick: () => console.log("Reply to comment:", comment._id),
+      onClick: () => setShowReplyField(comment._id?.toString()),
     },
   ];
 
@@ -395,12 +398,12 @@ const VideoDetailPage = () => {
         <ul>
           {comments?.map((comment, index) => (
             <li
-              className=" flex flex-col sm:flex-row justify-between items-start sm:items-center m-4 p-4 gap-3 rounded-lg bg-base-100 shadow"
+              className=" flex flex-col sm:flex-row justify-between items-start sm:items-center m-4 p-4 gap-3 border-b"
               key={`${comment._id} + ${index}`}
             >
               <div className="flex items-start justify-center gap-2 flex-col w-full">
-                <div className="flex items-center justify-between w-full">
-                  <div>
+                <div className="flex-col items-center  justify-between w-full">
+                  <div className="flex items-center justify-center, gap-5">
                     <img
                       src={comment.user.avatar}
                       alt={comment.user.username}
@@ -409,25 +412,7 @@ const VideoDetailPage = () => {
                     <span className="font-bold text-xl text-gray-700">
                       {comment.user.username}
                     </span>
-                  </div>
-                  <div className="flex gap-2">
-                    {video &&
-                      getCommentActions(comment, session, video, deleteLoader)
-                        .filter((action) => action.show)
-                        .map((action, i) => (
-                          <div
-                            key={i}
-                            className="tooltip tooltip-top"
-                            data-tip={action.name}
-                          >
-                            <button
-                              className="btn btn-square btn-ghost"
-                              onClick={action.onClick}
-                            >
-                              {action.icon}
-                            </button>
-                          </div>
-                        ))}
+                    <span>{formatTimeAgo(comment?.createdAt)}</span>
                   </div>
                 </div>
                 {commentToEdit === comment._id.toString() ? (
@@ -458,7 +443,59 @@ const VideoDetailPage = () => {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-300">{comment.comment}</p>
+                  <>
+                    <p className="text-sm text-gray-300">{comment.comment}</p>
+                    <div className="flex gap-2">
+                      {video &&
+                        getCommentActions(comment, session, video, deleteLoader)
+                          .filter((action) => action.show)
+                          .map((action, i) => (
+                            <div
+                              key={i}
+                              className="tooltip tooltip-top"
+                              data-tip={action.name}
+                            >
+                              <button onClick={action.onClick}>
+                                {action.icon}
+                              </button>
+                            </div>
+                          ))}
+                    </div>
+                    {showReplyFiled === comment?._id?.toString() && (
+                      <div className="flex items-center justify-between w-full gap-2">
+                        <input
+                          className=" border-gray-300  w-full border-b  bg-transparent focus:outline-none"
+                          type="text"
+                          placeholder="Add Comment "
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                        />
+                        <div className="flex items-center gap-4">
+                          <button
+                            className="btn ptn-primary"
+                            onClick={() => {
+                              handlePostReplyToComment(
+                                showReplyFiled,
+                                replyText
+                              );
+                            }}
+                            disabled={replyText.trim() === ""}
+                          >
+                            reply
+                          </button>
+                          <button
+                            className="btn ptn-primary "
+                            onClick={() => {
+                              setShowReplyField(null);
+                              setReplyText("");
+                            }}
+                          >
+                            cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </li>

@@ -2,16 +2,26 @@ import mongoose, { Schema, Types, model } from "mongoose";
 
 export interface IReplies {
   _id: Types.ObjectId;
-  posted_by: string;
-  reply_to: string;
+  posted_by: Types.ObjectId;
+  reply_to: Types.ObjectId;
+  reply: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 const replySchema = new Schema<IReplies>(
   {
-    posted_by: { type: String, required: true },
-    reply_to: { type: String, required: true },
+    posted_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    reply_to: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      required: true,
+    },
+    reply: { type: String, required: true },
   },
   {
     timestamps: true,

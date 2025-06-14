@@ -31,13 +31,56 @@ export async function GET(
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
 
+    // const videoComments = await Comment.aggregate([
+    //   {
+    //     $match: {
+    //       videoId: new mongoose.Types.ObjectId(id), // Match by `videoId`
+    //     },
+    //   },
+    // ]);
     const videoComments = await Comment.aggregate([
       {
         $match: {
-          videoId: new mongoose.Types.ObjectId(id), // Match by `videoId`
+          videoId: new mongoose.Types.ObjectId(id),
         },
       },
+      {
+        $lookup: {
+          from: "replies", // ✅ MongoDB auto-pluralizes collection names
+          localField: "_id",
+          foreignField: "reply_to",
+          as: "replies",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "posted_by",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: "$user",
+      },
+      {
+        $project: {
+          _id: 1,
+          comment: 1,
+          posted_by: 1,
+          videoId: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "user.username": 1,
+          "user.avatar": 1,
+          replies: 1,
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
     ]);
+
     return NextResponse.json({ comments: videoComments }, { status: 200 });
   } catch (error) {
     console.error("Error fetching comments:", error);

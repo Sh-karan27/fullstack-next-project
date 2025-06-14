@@ -101,7 +101,13 @@ class ApiClient {
     console.log(id, reply);
     return this.fetch<IReplies>(`/replies/${id}`, {
       method: "POST",
-      body: reply,
+      body: { reply },
+    });
+  }
+
+  async get_replies(id: string) {
+    return this.fetch<{ replies: IReplies[] }>(`/replies/${id}`, {
+      method: "GET",
     });
   }
 }
