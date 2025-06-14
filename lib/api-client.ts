@@ -1,4 +1,5 @@
 import { IComment } from "@/models/Comment";
+import { IReplies } from "@/models/Replies";
 import { IVideo } from "@/models/Video";
 
 export type VideoFormData = Omit<IVideo, "_id">;
@@ -92,6 +93,15 @@ class ApiClient {
     return this.fetch<IComment>(`/comments/${id}`, {
       method: "PATCH",
       body: { comment }, // Send as JSON object with key "comment"
+    });
+  }
+
+  // Reply
+  async post_reply(id: string, reply: string) {
+    console.log(id, reply);
+    return this.fetch<IReplies>(`/replies/${id}`, {
+      method: "POST",
+      body: reply,
     });
   }
 }

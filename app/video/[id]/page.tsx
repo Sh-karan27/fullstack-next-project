@@ -8,6 +8,7 @@ import { IComment } from "@/models/Comment";
 import { Modal } from "antd";
 import { useSession } from "next-auth/react";
 import { Session } from "next-auth";
+import { GoReply } from "react-icons/go";
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -147,6 +148,15 @@ const VideoDetailPage = () => {
     }
   };
 
+  const handlePostReplyToComment = async (id: string, reply: string) => {
+    try {
+      const response = await apiClient.post_reply(id, reply);
+      console.log(response, "replied to comment");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const getCommentActions = (
     comment: IComment,
     session: Session | null,
@@ -202,6 +212,12 @@ const VideoDetailPage = () => {
           </svg>
         ),
       onClick: () => deleteComment(comment._id.toString()),
+    },
+    {
+      name: "Reply",
+      show: session?.user?.id !== comment.posted_by.toString(),
+      icon: <GoReply className="size-[1.2em]" />,
+      onClick: () => console.log("Reply to comment:", comment._id),
     },
   ];
 
