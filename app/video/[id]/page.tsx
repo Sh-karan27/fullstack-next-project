@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { Session } from "next-auth";
 import { GoReply } from "react-icons/go";
 import { formatTimeAgo } from "@/app/utils/formatTimeAgo";
+import { IoIosArrowDown } from "react-icons/io";
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -31,6 +32,7 @@ const VideoDetailPage = () => {
   const [editFieldCommentInput, setEditFieldCommentInput] = useState("");
   const [showReplyFiled, setShowReplyField] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
+  const [showReplies, setShowReplies] = useState(false);
 
   useEffect(() => {
     console.log(session);
@@ -155,6 +157,9 @@ const VideoDetailPage = () => {
     try {
       const response = await apiClient.post_reply(id, reply);
       console.log(response, "replied to comment");
+      await fetchVideoComments();
+      setReplyText("");
+      setShowReplyField(null);
     } catch (error) {
       console.log(error);
     }
@@ -445,21 +450,78 @@ const VideoDetailPage = () => {
                 ) : (
                   <>
                     <p className="text-sm text-gray-300">{comment.comment}</p>
-                    <div className="flex gap-2">
-                      {video &&
-                        getCommentActions(comment, session, video, deleteLoader)
-                          .filter((action) => action.show)
-                          .map((action, i) => (
-                            <div
-                              key={i}
-                              className="tooltip tooltip-top"
-                              data-tip={action.name}
-                            >
-                              <button onClick={action.onClick}>
-                                {action.icon}
-                              </button>
-                            </div>
-                          ))}
+
+                    <div className="flex gap-2 flex-col items-start">
+                      <div className="flex items-start gap-2">
+                        {video &&
+                          getCommentActions(
+                            comment,
+                            session,
+                            video,
+                            deleteLoader
+                          )
+                            .filter((action) => action.show)
+                            .map((action, i) => (
+                              <div
+                                key={i}
+                                className="tooltip tooltip-top"
+                                data-tip={action.name}
+                              >
+                                <button onClick={action.onClick}>
+                                  {action.icon}
+                                </button>
+                              </div>
+                            ))}
+                      </div>
+                      {(comment.replies ?? []).length > 0 && (
+                        <p
+                          className="text-sm text-[#777AFA] flex items-center gap-2 cursor-pointer"
+                          onClick={() => setShowReplies(!showReplies)}
+                        >
+                          replies {(comment.replies ?? []).length || ""}{" "}
+                          <IoIosArrowDown />
+                        </p>
+                      )}
+                      {showReplies && (comment?.replies?.length ?? 0) > 0 && (
+                        <div>
+                          {(comment?.replies ?? []).map((item, index) => {
+                            const username = item?.user?.username || "Unknown";
+                            const avatar =
+                              item?.user?.avatar ||
+                              "https://ui-avatars.com/api/?name=Unknown&background=777aFA&color=fff";
+
+                            return (
+                              <div className="mt-5 ml-5" key={index}>
+                                <div
+                                  key={index}
+                                  className="flex items-start justify-center gap-2"
+                                >
+                                  <img
+                                    src={avatar}
+                                    alt={username}
+                                    className="w-5 h-5 rounded-full"
+                                  />
+                                  <div className="flex items-start justify-center flex-col gap-1">
+                                    <div className="flex items-start justify-center gap-1">
+                                      <span className="font-bold text-sm text-gray-700">
+                                        @{username}
+                                      </span>
+                                      <span className="text-sm">
+                                        {formatTimeAgo(item?.createdAt)}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <span className="font-bold text-sm text-gray-300">
+                                        {item.reply}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                     {showReplyFiled === comment?._id?.toString() && (
                       <div className="flex items-center justify-between w-full gap-2">

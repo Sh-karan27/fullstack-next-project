@@ -1,5 +1,5 @@
 import mongoose, { Schema, model, models } from "mongoose";
-
+import { IReplies } from "./Replies";
 export interface IComment {
   _id: mongoose.Types.ObjectId;
   comment: string;
@@ -11,6 +11,7 @@ export interface IComment {
     username: string;
     avatar: string;
   };
+  replies?: IReplies[];
 }
 
 const commentSchema = new Schema<IComment>(

@@ -31,13 +31,6 @@ export async function GET(
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
 
-    // const videoComments = await Comment.aggregate([
-    //   {
-    //     $match: {
-    //       videoId: new mongoose.Types.ObjectId(id), // Match by `videoId`
-    //     },
-    //   },
-    // ]);
     const videoComments = await Comment.aggregate([
       {
         $match: {
@@ -46,12 +39,13 @@ export async function GET(
       },
       {
         $lookup: {
-          from: "replies", // ✅ MongoDB auto-pluralizes collection names
+          from: "replies",
           localField: "_id",
           foreignField: "reply_to",
           as: "replies",
         },
       },
+      { $unwind: { path: "$replies", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "users",
@@ -60,8 +54,32 @@ export async function GET(
           as: "user",
         },
       },
+      { $unwind: "$user" },
       {
-        $unwind: "$user",
+        $lookup: {
+          from: "users",
+          localField: "replies.posted_by",
+          foreignField: "_id",
+          as: "replies.user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$replies.user",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          comment: { $first: "$comment" },
+          posted_by: { $first: "$posted_by" },
+          videoId: { $first: "$videoId" },
+          createdAt: { $first: "$createdAt" },
+          updatedAt: { $first: "$updatedAt" },
+          user: { $first: "$user" },
+          replies: { $push: "$replies" },
+        },
       },
       {
         $project: {
@@ -73,12 +91,45 @@ export async function GET(
           updatedAt: 1,
           "user.username": 1,
           "user.avatar": 1,
-          replies: 1,
+          replies: {
+            $filter: {
+              input: {
+                $map: {
+                  input: "$replies",
+                  as: "reply",
+                  in: {
+                    $cond: [
+                      {
+                        $and: [
+                          { $ifNull: ["$$reply._id", false] },
+                          { $ifNull: ["$$reply.reply", false] },
+                          { $ifNull: ["$$reply.posted_by", false] },
+                        ],
+                      },
+                      {
+                        _id: "$$reply._id",
+                        reply: "$$reply.reply",
+                        reply_to: "$$reply.reply_to",
+                        posted_by: "$$reply.posted_by",
+                        createdAt: "$$reply.createdAt",
+                        updatedAt: "$$reply.updatedAt",
+                        user: {
+                          username: "$$reply.user.username",
+                          avatar: "$$reply.user.avatar",
+                        },
+                      },
+                      null,
+                    ],
+                  },
+                },
+              },
+              as: "reply",
+              cond: { $ne: ["$$reply", null] },
+            },
+          },
         },
       },
-      {
-        $sort: { createdAt: -1 },
-      },
+      { $sort: { createdAt: -1 } },
     ]);
 
     return NextResponse.json({ comments: videoComments }, { status: 200 });

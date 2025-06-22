@@ -7,6 +7,10 @@ export interface IReplies {
   reply: string;
   createdAt?: Date;
   updatedAt?: Date;
+  user: {
+    username: string;
+    avatar: string;
+  };
 }
 
 const replySchema = new Schema<IReplies>(
