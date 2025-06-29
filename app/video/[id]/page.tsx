@@ -11,6 +11,7 @@ import { Session } from "next-auth";
 import { GoReply } from "react-icons/go";
 import { formatTimeAgo } from "@/app/utils/formatTimeAgo";
 import { IoIosArrowDown } from "react-icons/io";
+import { BiSolidLike } from "react-icons/bi";
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -229,6 +230,18 @@ const VideoDetailPage = () => {
     },
   ];
 
+  const handleToggleLike = async () => {
+    try {
+      const response = await apiClient.postLike(videoId as string);
+      console.log(response, "like response");
+      fetchVideo(); // Refresh video data to update likes count
+      showNotification("Video liked!", "success");
+    } catch (error) {
+      console.error("Failed to like video:", error);
+      showNotification("Failed to like video", "error");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Video Player */}
@@ -261,6 +274,19 @@ const VideoDetailPage = () => {
       </div>
       {/* Action Buttons */}
       <div className="max-w-4xl w-full mx-auto flex gap-4 mt-6 px-4">
+        <div>
+          <BiSolidLike
+            style={{
+              color: video?.isLiked ? "#fff" : "#777AFA",
+              fontSize: "20px",
+            }}
+            onClick={handleToggleLike}
+          />
+
+          {(video?.likesCount ?? 0) > 1 && (
+            <p style={{ color: "white" }}>{video?.likesCount ?? 0} </p>
+          )}
+        </div>
         {session && session.user.id === video?.posted_by.id && (
           <button
             className="btn btn-primary"
@@ -283,7 +309,6 @@ const VideoDetailPage = () => {
             Edit
           </button>
         )}
-
         <button className="btn btn-primary">Share</button>
       </div>
       {/* Delete Confirmation Modal */}

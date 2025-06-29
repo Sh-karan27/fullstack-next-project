@@ -22,6 +22,8 @@ export interface IVideo {
     weight: number;
     quality?: number;
   };
+  isLiked?: boolean;
+  likesCount?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

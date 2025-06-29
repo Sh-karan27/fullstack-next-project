@@ -42,7 +42,7 @@ export async function GET(
         $lookup: {
           from: "likes",
           localField: "_id",
-          foreignField: "videoId",
+          foreignField: "video",
           as: "likes",
         },
       },

@@ -1,4 +1,5 @@
 import { IComment } from "@/models/Comment";
+import { ILike } from "@/models/Like";
 import { IReplies } from "@/models/Replies";
 import { IVideo } from "@/models/Video";
 
@@ -108,6 +109,13 @@ class ApiClient {
   async get_replies(id: string) {
     return this.fetch<{ replies: IReplies[] }>(`/replies/${id}`, {
       method: "GET",
+    });
+  }
+  // Like
+  async postLike(id: string) {
+    console.log("id for like", id);
+    return this.fetch(`/like/${id}`, {
+      method: "POST",
     });
   }
 }

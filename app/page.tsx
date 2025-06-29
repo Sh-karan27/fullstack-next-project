@@ -1,9 +1,9 @@
-'use client';
-import { apiClient } from '@/lib/api-client';
-import { IVideo } from '@/models/Video';
+"use client";
+import { apiClient } from "@/lib/api-client";
+import { IVideo } from "@/models/Video";
 
-import { useEffect, useState } from 'react';
-import VideoFeed from './components/VideoFeed';
+import { useEffect, useState } from "react";
+import VideoFeed from "./components/VideoFeed";
 
 export default function Home() {
   const [videos, setvideos] = useState<IVideo[]>([]);
@@ -14,7 +14,7 @@ export default function Home() {
         const data = await apiClient.getVideos();
         setvideos(data);
       } catch (error) {
-        console.error('Error fetching videos');
+        console.error("Error fetching videos");
       }
     };
 
@@ -22,8 +22,8 @@ export default function Home() {
   }, []);
 
   return (
-    <main className='container mx-auto px-4 py-8'>
-      <h1 className='text-3xl font-bold mb-8'>ImageKit ReelsPro</h1>
+    <main className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">ImageKit ReelsPro</h1>
       <VideoFeed videos={videos} />
     </main>
   );
