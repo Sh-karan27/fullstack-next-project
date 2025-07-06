@@ -232,15 +232,19 @@ const VideoDetailPage = () => {
 
   const handleToggleLike = async () => {
     try {
-      const response = await apiClient.postLike(videoId as string);
+      const response = (await apiClient.postLike(videoId as string)) as {
+        message?: string;
+      };
       console.log(response, "like response");
       fetchVideo(); // Refresh video data to update likes count
-      showNotification("Video liked!", "success");
+      showNotification(response?.message ?? "Liked!", "success");
     } catch (error) {
       console.error("Failed to like video:", error);
       showNotification("Failed to like video", "error");
     }
   };
+
+  const handleToggleFollow = () => {};
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -262,7 +266,9 @@ const VideoDetailPage = () => {
             />
             <p>{video?.posted_by.username}</p>
           </div>
-          <button className="btn btn-primary">Follow</button>
+          <button className="btn btn-primary" onClick={handleToggleFollow}>
+            Follow
+          </button>
         </div>
       </div>
       {/* Title and Description */}
@@ -274,17 +280,18 @@ const VideoDetailPage = () => {
       </div>
       {/* Action Buttons */}
       <div className="max-w-4xl w-full mx-auto flex gap-4 mt-6 px-4">
-        <div>
+        <div className="flex items-center gap-2">
           <BiSolidLike
             style={{
               color: video?.isLiked ? "#fff" : "#777AFA",
               fontSize: "20px",
+              cursor: "pointer",
             }}
             onClick={handleToggleLike}
           />
 
-          {(video?.likesCount ?? 0) > 1 && (
-            <p style={{ color: "white" }}>{video?.likesCount ?? 0} </p>
+          {(video?.likesCount ?? 0) > 0 && (
+            <p style={{ color: "white" }}>{video?.likesCount ?? 0}</p>
           )}
         </div>
         {session && session.user.id === video?.posted_by.id && (

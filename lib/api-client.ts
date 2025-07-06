@@ -118,6 +118,13 @@ class ApiClient {
       method: "POST",
     });
   }
+  // Subscription
+  async toggleFollow(id: string) {
+    console.log(id, "id for toggle follow");
+    return this.fetch(`/subscription/${id}`, {
+      method: "POST",
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

@@ -29,7 +29,7 @@ export async function POST(
         video: new mongoose.Types.ObjectId(id),
       });
       return NextResponse.json(
-        { message: "Disliked successfully", deleteLike },
+        { message: "Like removed successfully", deleteLike },
         { status: 200 }
       );
     }
