@@ -11,6 +11,7 @@ export interface IVideo {
     id: string;
     username: string;
     email: string;
+    avatar: string;
   };
   title: string;
   description: string;
@@ -34,6 +35,7 @@ const videoSchema = new Schema<IVideo>(
       id: { type: String, required: true },
       username: { type: String, required: true },
       email: { type: String, required: true },
+      avatar: { type: String, required: true },
     },
     title: { type: String, required: true },
     description: { type: String, required: true },

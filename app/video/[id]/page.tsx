@@ -10,7 +10,7 @@ import { useSession } from "next-auth/react";
 import { Session } from "next-auth";
 import { GoReply } from "react-icons/go";
 import { formatTimeAgo } from "@/app/utils/formatTimeAgo";
-import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { BiSolidLike } from "react-icons/bi";
 
 const VideoDetailPage = () => {
@@ -34,6 +34,11 @@ const VideoDetailPage = () => {
   const [showReplyFiled, setShowReplyField] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
+  type Subscriber = {
+    username: string;
+    id: string;
+  };
+  const [subscriber, setSubscriber] = useState<Subscriber[]>([]);
 
   useEffect(() => {
     console.log(session);
@@ -244,7 +249,36 @@ const VideoDetailPage = () => {
     }
   };
 
-  const handleToggleFollow = () => {};
+  const handleToggleFollow = async () => {
+    try {
+      const response = (await apiClient.toggleFollow(
+        video?.posted_by.id as string
+      )) as { message?: string };
+      console.log(response, "follow response");
+      showNotification(response?.message || "Action completed", "success");
+    } catch (error: any) {
+      console.log(error, "Failed to toggle follow");
+      showNotification(error?.message || "Action completed", "error");
+    }
+  };
+
+  const fetchUserSubscriber = async (id: string) => {
+    try {
+      const response = await apiClient.fetchSubscriber(id);
+      const { subscribers } = response as { subscribers: Subscriber[] };
+      setSubscriber(subscribers);
+      console.log(response, "fetchUserSubscriber");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (video) {
+      const user_id = session?.user?.id as string;
+      fetchUserSubscriber(user_id);
+    }
+  }, [video]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -258,17 +292,22 @@ const VideoDetailPage = () => {
       </div>
       <div>
         <div className="max-w-4xl w-full mx-auto px-4 mb-6 flex items-center justify-between">
-          <div className="text-base text-gray-500 flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <img
-              src={session?.user?.avatar}
+              src={video?.posted_by?.avatar}
               alt="avatar"
-              className="w-8 h-8 rounded-full"
+              className="w-10 h-10 rounded-full"
             />
-            <p>{video?.posted_by.username}</p>
+            <div className="flex-col items-center gap-2">
+              <p>{video?.posted_by.username}</p>
+              <p className=" text-gray-500">{subscriber.length} subscribers</p>
+            </div>
           </div>
-          <button className="btn btn-primary" onClick={handleToggleFollow}>
-            Follow
-          </button>
+          {!(session?.user?.id === video?.posted_by?.id) && (
+            <button className="btn btn-primary" onClick={handleToggleFollow}>
+              Follow
+            </button>
+          )}
         </div>
       </div>
       {/* Title and Description */}
@@ -511,7 +550,7 @@ const VideoDetailPage = () => {
                           onClick={() => setShowReplies(!showReplies)}
                         >
                           replies {(comment.replies ?? []).length || ""}{" "}
-                          <IoIosArrowDown />
+                          {showReplies ? <IoIosArrowUp /> : <IoIosArrowDown />}
                         </p>
                       )}
                       {showReplies && (comment?.replies?.length ?? 0) > 0 && (

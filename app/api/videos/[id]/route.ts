@@ -74,6 +74,7 @@ export async function GET(
             id: 1,
             username: 1,
             email: 1,
+            avatar: 1,
           },
         },
       },
@@ -82,7 +83,7 @@ export async function GET(
     if (!video) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
-
+    console.log(video[0], "get perticular video");
     return NextResponse.json(video[0], { status: 200 });
   } catch (error) {
     return NextResponse.json(

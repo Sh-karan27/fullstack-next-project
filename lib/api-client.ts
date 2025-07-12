@@ -125,6 +125,12 @@ class ApiClient {
       method: "POST",
     });
   }
+  async fetchSubscriber(id: string) {
+    console.log(id, "id to fetch subscriber");
+    return this.fetch(`/subscription/${id}`, {
+      method: "GET",
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

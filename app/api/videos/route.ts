@@ -81,6 +81,7 @@ export async function POST(request: Request) {
         id: session.user.id,
         username: session.user.username,
         email: session.user.email,
+        avatar: session.user.avatar,
       },
     };
 
