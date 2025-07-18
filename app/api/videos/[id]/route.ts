@@ -47,6 +47,36 @@ export async function GET(
         },
       },
       {
+        $lookup: {
+          from: "subscriptions", // ✅ This matches your collection name
+          let: { uploaderId: "$posted_by.id" }, // posted_by.id is string
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: [
+                        "$follower",
+                        new mongoose.Types.ObjectId(session.user.id as string),
+                      ],
+                    },
+                    { $eq: ["$following", { $toObjectId: "$$uploaderId" }] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "subscriptionInfo",
+        },
+      },
+      {
+        $addFields: {
+          isSubscribed: { $gt: [{ $size: "$subscriptionInfo" }, 0] },
+        },
+      },
+
+      {
         $addFields: {
           likesCount: { $size: "$likes" },
           isLiked: {
@@ -70,6 +100,7 @@ export async function GET(
           updatedAt: 1,
           likesCount: 1,
           isLiked: 1,
+          isSubscribed: 1,
           posted_by: {
             id: 1,
             username: 1,

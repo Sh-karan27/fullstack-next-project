@@ -255,6 +255,7 @@ const VideoDetailPage = () => {
         video?.posted_by.id as string
       )) as { message?: string };
       console.log(response, "follow response");
+      fetchVideo();
       showNotification(response?.message || "Action completed", "success");
     } catch (error: any) {
       console.log(error, "Failed to toggle follow");
@@ -275,7 +276,7 @@ const VideoDetailPage = () => {
 
   useEffect(() => {
     if (video) {
-      const user_id = session?.user?.id as string;
+      const user_id = video.posted_by.id as string;
       fetchUserSubscriber(user_id);
     }
   }, [video]);
@@ -305,7 +306,7 @@ const VideoDetailPage = () => {
           </div>
           {!(session?.user?.id === video?.posted_by?.id) && (
             <button className="btn btn-primary" onClick={handleToggleFollow}>
-              Follow
+              {video?.isSubscribed ? "Unsubscribe" : "Subscribe"}
             </button>
           )}
         </div>

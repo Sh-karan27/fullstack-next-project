@@ -23,6 +23,7 @@ export interface IVideo {
     weight: number;
     quality?: number;
   };
+  isSubscribed?: boolean;
   isLiked?: boolean;
   likesCount?: number;
   createdAt?: Date;
