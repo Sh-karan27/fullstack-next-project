@@ -52,3 +52,17 @@ export async function POST(
     );
   }
 }
+
+// get likes on perticualr video
+
+export async function GET({ params }: { params: { id: string } }) {
+  try {
+    await connectToDatabase();
+    const session = await getServerSession(authOptions);
+    console.log(session, "sessionp in get lieks for perticular video");
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const { id } = await params;
+  } catch (error) {}
+}
