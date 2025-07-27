@@ -11,18 +11,20 @@ const handle = app.getRequestHandler();
 app.prepare().then(() => {
   const expressApp = express();
   const server = http.createServer(expressApp);
+
   const io = new Server(server, {
     cors: {
       origin: "*",
     },
   });
 
-  // WebSocket Logic
+  // Socket.io logic
   io.on("connection", (socket) => {
     console.log("✅ WebSocket connected");
 
-    socket.on("message", (msg) => {
-      socket.broadcast.emit("message", msg);
+    socket.on("like-video", (videoId) => {
+      // Broadcast to all clients that a like happened on this video
+      io.emit("video-liked", { videoId });
     });
 
     socket.on("disconnect", () => {
@@ -30,10 +32,8 @@ app.prepare().then(() => {
     });
   });
 
-  // ✅ This is the fix!
-  expressApp.use((req, res) => {
-    handle(req, res);
-  });
+  // Pass socket.io instance to req for API access (optional)
+  expressApp.use((req, res) => handle(req, res));
 
   server.listen(port, () => {
     console.log(`🚀 Server running on http://localhost:${port}`);

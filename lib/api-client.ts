@@ -111,13 +111,21 @@ class ApiClient {
       method: "GET",
     });
   }
-  // Like
+  // LikepostLike
   async postLike(id: string) {
     console.log("id for like", id);
     return this.fetch(`/like/${id}`, {
       method: "POST",
     });
   }
+
+  async fetchLikesForVideo(id: string) {
+    console.log(id, "video id");
+    return this.fetch(`/like/${id}`, {
+      method: "GET",
+    });
+  }
+
   // Subscription
   async toggleFollow(id: string) {
     console.log(id, "id for toggle follow");

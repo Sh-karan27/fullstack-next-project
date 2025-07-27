@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Like } from "@/models/Like";
@@ -22,6 +22,7 @@ export async function POST(
     }
     const like = await Like.findOne({
       user: new mongoose.Types.ObjectId(session.user.id as string),
+      video: new mongoose.Types.ObjectId(id),
     });
     if (like) {
       const deleteLike = await Like.deleteOne({
@@ -55,7 +56,10 @@ export async function POST(
 
 // get likes on perticualr video
 
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToDatabase();
     const session = await getServerSession(authOptions);
@@ -64,5 +68,98 @@ export async function GET({ params }: { params: { id: string } }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const { id } = await params;
-  } catch (error) {}
+    console.log("id for like get likes on perticualr video", id);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.log("Invalid ObjectId!");
+    }
+
+    // const likesOnVide = await Like.find({ video: id });
+
+    const likesOnVide = await Like.aggregate([
+      {
+        $match: {
+          video: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      { $unwind: "$userInfo" },
+      {
+        $project: {
+          _id: 0,
+          username: "$userInfo.username",
+          avatar: "$userInfo.avatar",
+          userId: "$user", // needed for isLiked
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          users: {
+            $push: {
+              username: "$username",
+              avatar: "$avatar",
+              userId: "$userId",
+            },
+          },
+          likeCount: { $sum: 1 },
+        },
+      },
+      {
+        $addFields: {
+          isLiked: {
+            $in: [
+              new mongoose.Types.ObjectId(session?.user?.id as string),
+              "$users.userId",
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          users: {
+            $map: {
+              input: "$users",
+              as: "u",
+              in: {
+                username: "$$u.username",
+                avatar: "$$u.avatar",
+              },
+            },
+          },
+          likeCount: 1,
+          isLiked: 1,
+        },
+      },
+    ]);
+
+    if (!likesOnVide) {
+      return NextResponse.json(
+        {
+          error: "Failed to fetch likes",
+        },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json(
+      {
+        message: "Like for video fetched successfully",
+        ...likesOnVide[0],
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      { error: "Failed to fetch likes on  video" },
+      { status: 500 }
+    );
+  }
 }

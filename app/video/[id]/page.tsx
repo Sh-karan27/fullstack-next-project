@@ -12,6 +12,8 @@ import { GoReply } from "react-icons/go";
 import { formatTimeAgo } from "@/app/utils/formatTimeAgo";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { BiSolidLike } from "react-icons/bi";
+import { io } from "socket.io-client";
+const socket = io("http://localhost:3000");
 
 const VideoDetailPage = () => {
   const { id: videoId } = useParams();
@@ -34,6 +36,8 @@ const VideoDetailPage = () => {
   const [showReplyFiled, setShowReplyField] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
+  const [likesOnVideo, setLikesOnVideo] = useState<number | null>(null);
+  const [showLikes, setShowLikes] = useState(false);
   type Subscriber = {
     username: string;
     id: string;
@@ -53,6 +57,7 @@ const VideoDetailPage = () => {
 
     fetchVideo();
     fetchVideoComments();
+    fetchVideoLikes(videoId as string);
   }, [videoId]);
 
   const fetchVideo = async () => {
@@ -63,6 +68,22 @@ const VideoDetailPage = () => {
       setError("Failed to Load video");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVideoLikes = async (videoId: string) => {
+    try {
+      const response = await apiClient.fetchLikesForVideo(videoId);
+      console.log(response);
+      const { likeCount, users, isLiked } = response as {
+        likeCount: number;
+        users: { username: string; avatar: string }[];
+        isLiked: boolean;
+      };
+      setShowLikes(isLiked);
+      setLikesOnVideo(likeCount);
+    } catch (error) {
+      console.log(error, "error in video page");
     }
   };
 
@@ -241,7 +262,9 @@ const VideoDetailPage = () => {
         message?: string;
       };
       console.log(response, "like response");
-      fetchVideo(); // Refresh video data to update likes count
+      socket.emit("like-video", videoId);
+      // fetchVideo(); // Refresh video data to update likes count
+      fetchVideoLikes(videoId as string);
       showNotification(response?.message ?? "Liked!", "success");
     } catch (error) {
       console.error("Failed to like video:", error);
@@ -256,6 +279,7 @@ const VideoDetailPage = () => {
       )) as { message?: string };
       console.log(response, "follow response");
       fetchVideo();
+      fetchVideoLikes(videoId as string);
       showNotification(response?.message || "Action completed", "success");
     } catch (error: any) {
       console.log(error, "Failed to toggle follow");
@@ -280,6 +304,19 @@ const VideoDetailPage = () => {
       fetchUserSubscriber(user_id);
     }
   }, [video]);
+
+  useEffect(() => {
+    socket.on("video-liked", ({ videoId: likedVideoId }) => {
+      if (likedVideoId === videoId) {
+        fetchVideo();
+        fetchVideoLikes(likedVideoId as string);
+      }
+    });
+
+    return () => {
+      socket.off("video-liked");
+    };
+  }, [videoId]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -323,15 +360,15 @@ const VideoDetailPage = () => {
         <div className="flex items-center gap-2">
           <BiSolidLike
             style={{
-              color: video?.isLiked ? "#fff" : "#777AFA",
+              color: showLikes ? "#fff" : "#777AFA",
               fontSize: "20px",
               cursor: "pointer",
             }}
             onClick={handleToggleLike}
           />
 
-          {(video?.likesCount ?? 0) > 0 && (
-            <p style={{ color: "white" }}>{video?.likesCount ?? 0}</p>
+          {(likesOnVideo ?? 0) > 0 && (
+            <p style={{ color: "white" }}>{likesOnVideo ?? 0}</p>
           )}
         </div>
         {session && session.user.id === video?.posted_by.id && (
