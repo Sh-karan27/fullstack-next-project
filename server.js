@@ -39,6 +39,11 @@ app.prepare().then(() => {
     });
   });
 
+  const toggleLike = async () => {
+    try {
+    } catch (error) {}
+  };
+
   // Pass socket.io instance to req for API access (optional)
   expressApp.use((req, res) => handle(req, res));
 
