@@ -22,9 +22,16 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("✅ WebSocket connected");
 
-    socket.on("like-video", (videoId) => {
-      // Broadcast to all clients that a like happened on this video
-      io.emit("video-liked", { videoId });
+    // join i specific video room
+
+    socket.on("join-video", (videoId) => {
+      socket.join(videoId);
+      console.log(`User joined video room : ${videoId}`);
+    });
+
+    socket.on("like-video", async ({ videoId, userId }) => {
+      const { likeCount, isLiked } = await toggleLike(videoId, userId);
+      io.on(videoId).emit("video-like", { videoId, likeCount, isLiked });
     });
 
     socket.on("disconnect", () => {
