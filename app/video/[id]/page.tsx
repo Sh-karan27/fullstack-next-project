@@ -36,7 +36,7 @@ const VideoDetailPage = () => {
   const [showReplyFiled, setShowReplyField] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
-  const [likesOnVideo, setLikesOnVideo] = useState<number | null>(null);
+  const [likesOnVideo, setLikesOnVideo] = useState<number | null>(0);
   const [showLikes, setShowLikes] = useState(false);
   type Subscriber = {
     username: string;
@@ -258,16 +258,41 @@ const VideoDetailPage = () => {
 
   const handleToggleLike = async () => {
     try {
+      // ✅ Step 1: Optimistically update UI immediately
+      setShowLikes((prev) => !prev);
+      setLikesOnVideo((prev) =>
+        showLikes ? (prev ?? 0) - 1 : (prev ?? 0) + 1
+      );
+
+      // ✅ Step 2: Call API
       const response = (await apiClient.postLike(videoId as string)) as {
         message?: string;
+        likeCount: number;
+        isLiked: boolean;
+        // users?: { username: string; avatar: string }[];
       };
+
       console.log(response, "like response");
-      socket.emit("like-video", videoId);
-      // fetchVideo(); // Refresh video data to update likes count
-      fetchVideoLikes(videoId as string);
+
+      // ✅ Step 3: Emit to socket (only global info, no isLiked!)
+      socket.emit("like-video", {
+        videoId,
+        likeCount: response.likeCount,
+        // users: response.users,   // if needed
+      });
+
+      // ✅ Step 4: Sync local state with server response
+      setLikesOnVideo(response.likeCount);
+      setShowLikes(response.isLiked);
+
       showNotification(response?.message ?? "Liked!", "success");
     } catch (error) {
       console.error("Failed to like video:", error);
+      // ❌ Step 5: Rollback optimistic update if API fails
+      setShowLikes((prev) => !prev);
+      setLikesOnVideo((prev) =>
+        showLikes ? (prev ?? 0) - 1 : (prev ?? 0) + 1
+      );
       showNotification("Failed to like video", "error");
     }
   };
@@ -306,10 +331,19 @@ const VideoDetailPage = () => {
   }, [video]);
 
   useEffect(() => {
-    socket.on("video-liked", ({ videoId: likedVideoId }) => {
+    if (videoId) {
+      socket.emit("join-video", videoId);
+    }
+
+    socket.on("video-liked", (data) => {
+      console.log("🔥 video-liked received:", data);
+
+      const { videoId: likedVideoId, likeCount } = data.videoId;
+
       if (likedVideoId === videoId) {
-        fetchVideo();
-        fetchVideoLikes(likedVideoId as string);
+        setLikesOnVideo(likeCount);
+        // setShowLikes(isLiked);
+        // setUsersWhoLiked(users);
       }
     });
 

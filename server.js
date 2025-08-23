@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const next = require("next");
 const http = require("http");
@@ -22,27 +23,24 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("✅ WebSocket connected");
 
-    // join i specific video room
-
+    // Join a video room
     socket.on("join-video", (videoId) => {
       socket.join(videoId);
-      console.log(`User joined video room : ${videoId}`);
+      console.log(`👤 User joined video room: ${videoId}`);
     });
 
-    socket.on("like-video", async ({ videoId, userId }) => {
-      const { likeCount, isLiked } = await toggleLike(videoId, userId);
-      io.on(videoId).emit("video-like", { videoId, likeCount, isLiked });
+    // Like event
+    socket.on("like-video", (data) => {
+      console.log("📩 like-video received:", data);
+
+      // broadcast exactly what frontend sent, no wrapping
+      io.to(data.videoId).emit("video-liked", data);
     });
 
     socket.on("disconnect", () => {
       console.log("❌ WebSocket disconnected");
     });
   });
-
-  const toggleLike = async () => {
-    try {
-    } catch (error) {}
-  };
 
   // Pass socket.io instance to req for API access (optional)
   expressApp.use((req, res) => handle(req, res));
