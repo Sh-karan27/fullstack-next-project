@@ -338,7 +338,7 @@ const VideoDetailPage = () => {
     socket.on("video-liked", (data) => {
       console.log("🔥 video-liked received:", data);
 
-      const { videoId: likedVideoId, likeCount } = data.videoId;
+      const { videoId: likedVideoId, likeCount } = data;
 
       if (likedVideoId === videoId) {
         setLikesOnVideo(likeCount);
